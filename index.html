@@ -1506,19 +1506,27 @@ const LECTURER_UPLOAD_TEMPLATES=[
  {title:'Nirmana Analisis',courseId:'nirmana-dwimatra',meeting:'2',fileHint:'Nirmana Analisis.pdf'}
 ];
 function lecturerTemplateDoc(t){return LECTURER_DOCS.find(d=>d.courseId===t.courseId&&String(d.meeting||'')===String(t.meeting||'')&&String(d.title||'').toLowerCase()===String(t.title||'').toLowerCase())}
+function openLearnHubFilePicker(input){
+ // Dipanggil langsung dari klik pengguna agar Chrome Android tetap menerima aktivasi pengguna.
+ // showPicker() lebih andal di browser mobile modern; click() menjadi fallback.
+ document.body.appendChild(input);
+ try {
+  if(typeof input.showPicker==='function') input.showPicker();
+  else input.click();
+ } catch(err) {
+  try { input.click(); } catch(err2) { input.remove(); alert('Pemilih file tidak bisa dibuka. Coba muat ulang halaman di Chrome, lalu tekan tombol upload sekali lagi.'); }
+ }
+}
 function fillLecturerTemplate(i){
  const t=LECTURER_UPLOAD_TEMPLATES[i]; if(!t)return;
  window.DOC_TEMPLATE_INDEX=String(i);
- // Create the file picker during the direct button click. Some browsers/WebViews
- // do not open a file chooser reliably for an input styled with display:none.
  const input=document.createElement('input');
  input.type='file'; input.accept='.pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
  input.setAttribute('aria-label','Pilih file PDF atau PowerPoint untuk '+t.title);
- input.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;z-index:2147483647;';
+ input.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;z-index:2147483647;';
  input.addEventListener('change',()=>{handleLecturerTemplateFile(input).finally(()=>input.remove())},{once:true});
  input.addEventListener('cancel',()=>input.remove(),{once:true});
- document.body.appendChild(input);
- input.click();
+ openLearnHubFilePicker(input);
 }
 const CUSTOM_DOC_META_STORE='learnhub_custom_lecturer_materials_v1';
 let CUSTOM_LECTURER_MATERIALS=[];
@@ -1575,7 +1583,7 @@ async function handleLecturerTemplateFile(input){
 async function replaceCustomLecturerMaterial(id){
  const d=LECTURER_DOCS.find(x=>x.id===id); if(!d)return;
  const input=document.createElement('input'); input.type='file'; input.accept='.pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
- input.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;z-index:2147483647;';
+ input.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;z-index:2147483647;';
  input.addEventListener('change',async()=>{try{const file=input.files?.[0];if(!file)return;const ext=(file.name.split('.').pop()||'').toLowerCase();if(!['pdf','ppt','pptx'].includes(ext)){alert('Gunakan file PDF, PPT, atau PPTX.');return}await putDocFile(id,file);d.fileName=file.name;d.size=file.size;d.type=file.type;d.updatedAt=Date.now();saveLecturerDocs();renderLecturerDocs();alert('File berhasil diganti.')}catch(e){alert('Gagal mengganti file. Coba Chrome terbaru.')}finally{input.remove()}},{once:true});
  input.addEventListener('cancel',()=>input.remove(),{once:true}); document.body.appendChild(input); input.click();
 }

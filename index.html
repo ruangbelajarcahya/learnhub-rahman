@@ -198,6 +198,20 @@ aside{top:160px;height:calc(100vh - 160px)}.app-shell{min-height:calc(100vh - 16
 .lecturer-course-toggle span:first-child{display:flex;flex-direction:column;gap:2px}.lecturer-course-toggle small{font-size:11px;color:var(--muted);font-weight:500}.lecturer-arrow{font-size:18px;transition:.2s}.lecturer-course-content{display:none;border-top:1px solid var(--border)}.lecturer-course-accordion.open .lecturer-course-content{display:block}.lecturer-course-accordion.open .lecturer-arrow{transform:rotate(180deg)}
 .lecturer-material-row.compact{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px}.lecturer-material-row.compact:last-child{border-bottom:0}.lecturer-material-row.compact .lecturer-material-main{min-width:0}.lecturer-material-row.compact .lecturer-material-main>div:last-child{min-width:0}.lecturer-material-row.compact b{font-size:13px}.lecturer-material-row.compact .meta{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lecturer-material-number{width:30px;height:25px;border-radius:7px;background:var(--soft);display:grid;place-items:center;font-size:10px;font-weight:800;flex:0 0 auto}.lecturer-material-main{display:flex;align-items:center;gap:9px}.lecturer-material-actions{display:flex;align-items:center;gap:5px;flex:0 0 auto}.lecturer-material-actions .mini{padding:5px 8px;font-size:11px}.lecturer-material-actions .status-pill{font-size:10px;padding:3px 6px}
 @media(max-width:700px){.lecturer-material-row.compact{align-items:flex-start}.lecturer-material-actions{flex-wrap:wrap;justify-content:flex-end}.lecturer-material-actions .status-pill{display:none}.lecturer-material-row.compact .meta{max-width:180px}}
+
+/* v84 mobile upload tap-target fix */
+@media(max-width:700px){
+ .lecturer-material-row.compact{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px 8px}
+ .lecturer-material-row.compact .lecturer-material-main{width:100%;min-width:0}
+ .lecturer-material-actions{width:100%;display:flex;justify-content:stretch;gap:8px;flex-wrap:nowrap}
+ .lecturer-material-actions .btn.mini{flex:1;min-height:42px;padding:10px 8px;font-size:12px;touch-action:manipulation;white-space:nowrap}
+ .lecturer-material-actions .status-pill{display:none}
+ .small-modal-card{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto}
+ .small-modal-body input[type=file]{display:block!important;width:100%!important;min-height:52px!important;padding:12px!important;font-size:14px!important;position:relative!important;z-index:2!important;opacity:1!important;pointer-events:auto!important;touch-action:manipulation}
+ .small-modal-actions .btn{min-height:44px;touch-action:manipulation}
+}
+.modal-backdrop{isolation:isolate;pointer-events:auto}
+.small-modal-card,.small-modal-card *{pointer-events:auto}
 </style>
 
 <style id="v39-profile-header-fix">
@@ -1520,13 +1534,50 @@ function openLearnHubFilePicker(input){
 function fillLecturerTemplate(i){
  const t=LECTURER_UPLOAD_TEMPLATES[i]; if(!t)return;
  window.DOC_TEMPLATE_INDEX=String(i);
- const input=document.createElement('input');
- input.type='file'; input.accept='.pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
- input.setAttribute('aria-label','Pilih file PDF atau PowerPoint untuk '+t.title);
- input.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;z-index:2147483647;';
- input.addEventListener('change',()=>{handleLecturerTemplateFile(input).finally(()=>input.remove())},{once:true});
- input.addEventListener('cancel',()=>input.remove(),{once:true});
- openLearnHubFilePicker(input);
+ // Mobile-safe flow: open an ordinary visible file input in a modal.
+ // This avoids programmatic input.click()/showPicker(), which can be ignored on Android Chrome.
+ document.getElementById('templateLecturerUploadModal')?.remove();
+ const m=document.createElement('div');m.className='modal-backdrop';m.id='templateLecturerUploadModal';
+ m.innerHTML=`<div class="small-modal-card"><div class="small-modal-head"><div><b>📎 Upload Materi</b><div class="meta">${esc(t.title)} · Pertemuan ${esc(t.meeting)}</div></div><button type="button" class="btn ghost mini" onclick="closeTemplateLecturerUpload()">✕</button></div><div class="small-modal-body"><label for="templateDocFile">Pilih file PDF/PPT dari perangkat</label><input id="templateDocFile" type="file" accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display:block;width:100%;min-height:48px;padding:10px;box-sizing:border-box"><div class="meta" style="margin-top:8px">File hanya tersimpan di browser/perangkat ini.</div><div class="small-modal-actions"><button type="button" class="btn ghost" onclick="closeTemplateLecturerUpload()">Batal</button><button type="button" class="btn primary" onclick="saveTemplateLecturerUpload()">💾 Simpan File</button></div></div></div>`;
+ m.addEventListener('click',e=>{if(e.target===m)closeTemplateLecturerUpload()});document.body.appendChild(m);
+}
+// Expose the mobile upload action explicitly on window so inline handlers work consistently.
+window.handleLecturerUploadButton=function(button){
+ try{
+  if(!button){alert('Tombol upload tidak ditemukan. Muat ulang halaman lalu coba lagi.');return;}
+  const customId=button.getAttribute('data-custom-id');
+  if(customId){window.replaceCustomLecturerMaterial(customId);return;}
+  const index=Number(button.getAttribute('data-template-index'));
+  if(!Number.isInteger(index)||index<0||!LECTURER_UPLOAD_TEMPLATES[index]){
+   alert('Materi ini belum terhubung ke formulir upload. Muat ulang halaman untuk memperbarui daftar materi.');return;
+  }
+  window.fillLecturerTemplate(index);
+ }catch(error){console.error('LearnHub upload button error:',error);alert('Form upload gagal dibuka. Coba muat ulang halaman, lalu tekan ＋ PDF/PPT sekali lagi.');}
+};
+window.fillLecturerTemplate=fillLecturerTemplate;
+function closeTemplateLecturerUpload(){document.getElementById('templateLecturerUploadModal')?.remove();window.DOC_TEMPLATE_INDEX='';}
+
+// Fallback for mobile browsers where inline event dispatch on dynamically-rendered buttons is unreliable.
+document.addEventListener('click',function(event){
+ const button=event.target&&event.target.closest?event.target.closest('.lecturer-upload-trigger'):null;
+ if(!button)return;
+ if(button.dataset.lhHandled==='1')return;
+ button.dataset.lhHandled='1';
+ // The inline handler normally handles this. This fallback only runs if no modal appeared.
+ setTimeout(function(){
+  if(!document.getElementById('templateLecturerUploadModal')&&!document.getElementById('replaceCustomLecturerUploadModal')){
+   button.dataset.lhHandled='0';
+   window.handleLecturerUploadButton(button);
+  }
+ },80);
+},true);
+
+async function saveTemplateLecturerUpload(){
+ const input=document.getElementById('templateDocFile');
+ if(!input?.files?.length){alert('Pilih file PDF/PPT terlebih dahulu.');return;}
+ const saveButton=document.querySelector('#templateLecturerUploadModal .btn.primary');
+ if(saveButton){saveButton.disabled=true;saveButton.textContent='Menyimpan…';}
+ await handleLecturerTemplateFile(input);
 }
 const CUSTOM_DOC_META_STORE='learnhub_custom_lecturer_materials_v1';
 let CUSTOM_LECTURER_MATERIALS=[];
@@ -1565,7 +1616,7 @@ function renderLecturerCatalog(){
    <div class="lecturer-course-content">
     ${items.length?items.map((t)=>{const d=lecturerTemplateDoc(t);const idx=templates.indexOf(t);return `<div class="lecturer-material-row compact">
       <div class="lecturer-material-main"><div class="lecturer-material-number">P${esc(t.meeting)}</div><div><b>${esc(t.title)}</b><div class="meta">Pertemuan ${esc(t.meeting)} · ${d?`📄 ${esc(d.fileName)}`:'Belum ada file'}</div></div></div>
-      <div class="lecturer-material-actions">${d?`<span class="status-pill success">✓ Ada</span><button class="btn primary mini" onclick="openLecturerDoc('${d.id}')">Buka</button>`:`<span class="status-pill pending">Belum diisi</span>`}<button class="btn ghost mini" onclick="${t.custom?`replaceCustomLecturerMaterial('${t.id}')`:`fillLecturerTemplate(${LECTURER_UPLOAD_TEMPLATES.indexOf(t)})`}">${d?'Ganti':'＋ PDF/PPT'}</button></div>
+      <div class="lecturer-material-actions">${d?`<span class="status-pill success">✓ Ada</span><button class="btn primary mini" onclick="openLecturerDoc('${d.id}')">Buka</button>`:`<span class="status-pill pending">Belum diisi</span>`}<button type="button" class="btn ghost mini lecturer-upload-trigger" data-template-index="${LECTURER_UPLOAD_TEMPLATES.findIndex(x=>x.courseId===t.courseId&&String(x.meeting)===String(t.meeting)&&x.title===t.title)}" data-custom-id="${t.custom?esc(t.id):''}" onclick="window.handleLecturerUploadButton(this)">${d?'Ganti':'＋ PDF/PPT'}</button></div>
     </div>`}).join(''):'<div class="meta" style="padding:12px 0">Belum ada daftar materi.</div>'}
    </div>
   </section>`);
@@ -1577,15 +1628,22 @@ async function handleLecturerTemplateFile(input){
  const ext=(file.name.split('.').pop()||'').toLowerCase(); if(!['pdf','ppt','pptx'].includes(ext)){alert('Gunakan file PDF, PPT, atau PPTX.');input.value='';return;}
  const existing=lecturerTemplateDoc(t); const id=existing?.id||('doc-'+Date.now()+'-'+Math.random().toString(36).slice(2,8));
  const meta={id,title:t.title,fileName:file.name,courseId:t.courseId,meeting:t.meeting,description:'',size:file.size,type:file.type,createdAt:existing?.createdAt||Date.now(),updatedAt:Date.now()};
- try{await putDocFile(id,file);if(existing)Object.assign(existing,meta);else LECTURER_DOCS.unshift(meta);saveLecturerDocs();input.value='';window.DOC_TEMPLATE_INDEX='';renderLecturerDocs();alert(existing?'PDF/PPT berhasil diganti. Bahan Kuliah ikut sinkron otomatis.':'PDF/PPT berhasil disimpan. Bahan Kuliah ikut sinkron otomatis.');}
- catch(err){alert('Gagal menyimpan file. Coba Chrome terbaru.');}
+ try{await putDocFile(id,file);if(existing)Object.assign(existing,meta);else LECTURER_DOCS.unshift(meta);saveLecturerDocs();input.value='';closeTemplateLecturerUpload();renderLecturerDocs();alert(existing?'PDF/PPT berhasil diganti. Bahan Kuliah ikut sinkron otomatis.':'PDF/PPT berhasil disimpan. Bahan Kuliah ikut sinkron otomatis.');}
+ catch(err){const b=document.querySelector('#templateLecturerUploadModal .btn.primary');if(b){b.disabled=false;b.textContent='💾 Simpan File';}alert('Gagal menyimpan file. Coba pilih file lain atau muat ulang halaman.');}
 }
 async function replaceCustomLecturerMaterial(id){
  const d=LECTURER_DOCS.find(x=>x.id===id); if(!d)return;
- const input=document.createElement('input'); input.type='file'; input.accept='.pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation';
- input.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0.01;z-index:2147483647;';
- input.addEventListener('change',async()=>{try{const file=input.files?.[0];if(!file)return;const ext=(file.name.split('.').pop()||'').toLowerCase();if(!['pdf','ppt','pptx'].includes(ext)){alert('Gunakan file PDF, PPT, atau PPTX.');return}await putDocFile(id,file);d.fileName=file.name;d.size=file.size;d.type=file.type;d.updatedAt=Date.now();saveLecturerDocs();renderLecturerDocs();alert('File berhasil diganti.')}catch(e){alert('Gagal mengganti file. Coba Chrome terbaru.')}finally{input.remove()}},{once:true});
- input.addEventListener('cancel',()=>input.remove(),{once:true}); document.body.appendChild(input); input.click();
+ document.getElementById('replaceCustomLecturerUploadModal')?.remove();
+ const m=document.createElement('div');m.className='modal-backdrop';m.id='replaceCustomLecturerUploadModal';
+ m.innerHTML=`<div class="small-modal-card"><div class="small-modal-head"><div><b>📎 Ganti File Materi</b><div class="meta">${esc(d.title||'Materi')} </div></div><button type="button" class="btn ghost mini" onclick="document.getElementById('replaceCustomLecturerUploadModal')?.remove()">✕</button></div><div class="small-modal-body"><label for="replaceCustomDocFile">Pilih file PDF/PPT pengganti</label><input id="replaceCustomDocFile" type="file" accept=".pdf,.ppt,.pptx,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" style="display:block;width:100%;min-height:52px;padding:12px;box-sizing:border-box"><div class="small-modal-actions"><button type="button" class="btn ghost" onclick="document.getElementById('replaceCustomLecturerUploadModal')?.remove()">Batal</button><button type="button" class="btn primary" onclick="saveCustomLecturerReplacement('${String(id).replace(/'/g, '&#39;')}')">💾 Simpan File</button></div></div></div>`;
+ m.addEventListener('click',e=>{if(e.target===m)m.remove()});document.body.appendChild(m);
+}
+async function saveCustomLecturerReplacement(id){
+ const input=document.getElementById('replaceCustomDocFile');const d=LECTURER_DOCS.find(x=>x.id===id);const file=input?.files?.[0];
+ if(!file){alert('Pilih file PDF/PPT terlebih dahulu.');return}if(!d)return;
+ const ext=(file.name.split('.').pop()||'').toLowerCase();if(!['pdf','ppt','pptx'].includes(ext)){alert('Gunakan file PDF, PPT, atau PPTX.');return}
+ const b=document.querySelector('#replaceCustomLecturerUploadModal .btn.primary');if(b){b.disabled=true;b.textContent='Menyimpan…'}
+ try{await putDocFile(id,file);d.fileName=file.name;d.size=file.size;d.type=file.type;d.updatedAt=Date.now();saveLecturerDocs();document.getElementById('replaceCustomLecturerUploadModal')?.remove();renderLecturerDocs();alert('File berhasil diganti.')}catch(e){if(b){b.disabled=false;b.textContent='💾 Simpan File'}alert('Gagal mengganti file. Coba muat ulang halaman lalu ulangi.')}
 }
 function renderLecturerDocs(){
  app.innerHTML=`<div class="hero"><div><div class="eyebrow">Ruang file kuliah</div><h1>📂 Materi Dosen</h1><p>Semua materi dosen dikumpulkan di sini berdasarkan mata kuliah dan pertemuan. Upload PDF/PPT langsung pada materi yang sesuai.</p></div></div>

@@ -212,6 +212,9 @@ aside{top:160px;height:calc(100vh - 160px)}.app-shell{min-height:calc(100vh - 16
 }
 .modal-backdrop{isolation:isolate;pointer-events:auto}
 .small-modal-card,.small-modal-card *{pointer-events:auto}
+
+.kipk-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin:18px 0}.kipk-stat{padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.kipk-stat small{display:block;color:var(--muted);font-weight:700}.kipk-stat strong{display:block;font-size:clamp(21px,3vw,29px);line-height:1.25;margin:7px 0;color:var(--accent);overflow-wrap:anywhere}.kipk-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kipk-form label{display:grid;gap:5px;font-size:13px;font-weight:700}.kipk-form input,.kipk-form select,.kipk-form textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}.kipk-form .wide{grid-column:1/-1}.kipk-ledger{display:grid;gap:9px}.kipk-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:var(--panel)}.kipk-entry-main{min-width:0}.kipk-entry-main strong{display:block;overflow-wrap:anywhere}.kipk-entry-main small{color:var(--muted)}.kipk-entry-amount{font-weight:850;color:var(--bad);white-space:nowrap}.kipk-monthbar{height:9px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0}.kipk-monthbar i{height:100%;display:block;background:var(--accent);border-radius:99px}.kipk-help{padding:13px 15px;background:var(--accent2);border-radius:12px;color:var(--text);margin:12px 0}.kipk-month-select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}@media(max-width:600px){.kipk-form{grid-template-columns:1fr}.kipk-form .wide{grid-column:auto}.kipk-entry{align-items:flex-start}.kipk-entry-amount{white-space:normal;text-align:right}}
+
 </style>
 
 <style id="v39-profile-header-fix">
@@ -979,6 +982,93 @@ function levelQuestions(rawQs,id,level){
    return {...q,options:order.map(i=>options[i]),correct:order.map((old,i)=>correctSet.has(old)?i:null).filter(i=>i!==null)};
  });
 }
+// ===== PATCH KHUSUS PENDIDIKAN PANCASILA: format bertahap + normalisasi benar/salah =====
+const _learnHubOriginalLevelQuestions = levelQuestions;
+function _pancasilaTfNormalize(q){
+  const x={...q};
+  // Bank soal pancasila-bank-* menyimpan [1] untuk pernyataan BENAR dan [0] untuk SALAH.
+  // Bank lain yang memiliki opsi eksplisit Benar/Salah tetap memakai indeks opsi aslinya.
+  const explicit=Array.isArray(x.options)&&x.options.length>=2&&String(x.options[0]?.text??x.options[0]).toLowerCase()==='benar';
+  let isTrue;
+  if(explicit) isTrue=Number(x.correct?.[0]??0)===0;
+  else isTrue=String(x.id||'').startsWith('pancasila-bank-') ? Number(x.correct?.[0]??0)===1 : Number(x.correct?.[0]??0)===0;
+  x.type='tf'; x.options=[{text:'Benar',feedback:isTrue?'Tepat. Pernyataan sesuai dengan konsep yang diuji.':'Pernyataan ini tidak sepenuhnya sesuai dengan materi.'},{text:'Salah',feedback:!isTrue?'Tepat. Ada bagian klaim yang bertentangan dengan materi.':'Pernyataan ini sesuai dengan konsep yang diuji.'}];
+  x.correct=[isTrue?0:1]; x.answer=isTrue?0:1;
+  return x;
+}
+function _pancasilaExtraTypes(id,level){
+  const m=material(id)||{}, terms=Array.isArray(m.terms)?m.terms:[], points=Array.isArray(m.keyPoints)?m.keyPoints:[];
+  const title=m.title||'Pendidikan Pancasila';
+  const distractors=[
+   'Pancasila hanya dipelajari untuk dihafal saat ujian dan tidak terkait tindakan nyata.',
+   'Keputusan publik tidak perlu mempertimbangkan keadilan atau pihak yang terdampak.',
+   'Sumber historis, sosiologis, yuridis, dan politis memiliki arti yang sama persis.',
+   'Perbedaan pendapat sebaiknya diselesaikan dengan mengabaikan hak kelompok lain.'
+  ];
+  const multi=[];
+  for(let i=0;i<Math.min(4,points.length);i++){
+    const a=points[i%points.length], b=points[(i+1)%points.length];
+    multi.push({id:`${id}-level${level}-multi-${i+1}`,type:'multi',level,q:`Pilih SEMUA pernyataan yang sesuai dengan materi “${title}”.`,options:[{text:a,feedback:'Poin ini sesuai dengan materi.'},{text:b,feedback:'Poin ini juga sesuai dengan materi.'},{text:distractors[i%distractors.length],feedback:'Pernyataan ini tidak sesuai dengan materi.'},{text:distractors[(i+1)%distractors.length],feedback:'Pernyataan ini tidak sesuai dengan materi.'}],correct:[0,1],explanation:'Pilih lebih dari satu jawaban. Bandingkan setiap pernyataan dengan konsep dan poin inti materi.'});
+  }
+  const matching=[];
+  if(terms.length>=3){
+    for(let i=0;i<Math.min(4,terms.length);i++){
+      const group=terms.slice(0,Math.min(4,terms.length));
+      const rotated=[...group.slice(i%group.length),...group.slice(0,i%group.length)];
+      matching.push({id:`${id}-level${level}-matching-${i+1}`,type:'matching',level,q:`Cocokkan istilah dengan pengertiannya dalam materi “${title}”.`,pairs:rotated.map((t,j)=>({left:t[0],rightOptions:rotated.map(v=>v[1]),correctIndex:j})),explanation:'Hubungkan setiap istilah dengan definisinya. Perhatikan makna, bukan sekadar kemiripan kata.'});
+    }
+  }
+  const fill=[];
+  for(let i=0;i<Math.min(4,terms.length);i++){
+    const t=terms[i];
+    fill.push({id:`${id}-level${level}-fill-${i+1}`,type:'fill',level,q:`Isian singkat: istilah yang berarti “${t[1]}” adalah …`,answerText:t[0],blanks:[[t[0]]],explanation:`Istilah yang tepat adalah ${t[0]}.`});
+  }
+  return {multi,matching,fill};
+}
+levelQuestions=function(rawQs,id,level){
+  const m=material(id);
+  if(!m||m.courseId!=='pancasila') return _learnHubOriginalLevelQuestions(rawQs,id,level);
+  const all=(Array.isArray(rawQs)?rawQs:[]).filter(q=>q&&['mcq','tf','multi','matching','fill'].includes(q.type));
+  const sortStable=(arr)=>arr.slice().sort((a,b)=>String(a.id||a.q).localeCompare(String(b.id||b.q)));
+  const mcq=sortStable(all.filter(q=>q.type==='mcq'));
+  const tf=sortStable(all.filter(q=>q.type==='tf')).map(_pancasilaTfNormalize);
+  const extras=_pancasilaExtraTypes(id,level);
+  const take=(arr,n)=>arr.slice(0,n);
+  let qs=[];
+  if(level===1){ qs=take(mcq,20); }
+  if(level===2){ qs=[...take(mcq,10),...take(tf,10)]; }
+  if(level===3){ qs=[...take(mcq,10),...take(tf,7),...take(extras.multi,3)]; }
+  if(level===4){ qs=[...take(mcq,7),...take(tf,5),...take(extras.multi,4),...take(extras.matching,4)]; }
+  if(level===5){ qs=[...take(mcq,5),...take(tf,4),...take(extras.multi,4),...take(extras.matching,3),...take(extras.fill,4)]; }
+  // Deterministic question order; never shuffle the Benar/Salah labels themselves.
+  let seed=2166136261; const key='pancasila|'+id+'|'+level;
+  for(const ch of key){seed^=ch.charCodeAt(0);seed=Math.imul(seed,16777619)}
+  for(let i=qs.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[qs[i],qs[j]]=[qs[j],qs[i]]}
+  return qs.map(q=>{
+    if(q.type==='tf') return {..._pancasilaTfNormalize(q)};
+    if(q.type==='mcq'){
+      const opts=(q.options||[]).map(o=>typeof o==='string'?{text:o,feedback:''}:o); const correct=Number(q.correct?.[0]??0);
+      const order=opts.map((_,i)=>i); for(let i=order.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[order[i],order[j]]=[order[j],order[i]]}
+      const mapped=order.indexOf(correct); return {...q,options:order.map(i=>opts[i]),correct:[mapped],answer:mapped};
+    }
+    return {...q};
+  });
+};
+// Musik chiptune ringan (dibuat lokal via Web Audio, tanpa file eksternal). Browser memulai audio hanya setelah tombol ditekan.
+let _lhMusicCtx=null,_lhMusicTimer=null,_lhMusicStep=0;
+function toggleLearnHubQuizMusic(){
+  const btn=document.getElementById('lh-quiz-music');
+  if(_lhMusicTimer){clearInterval(_lhMusicTimer);_lhMusicTimer=null;try{_lhMusicCtx?.suspend()}catch(e){}if(btn)btn.textContent='🎵 Putar musik';return;}
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Audio tidak didukung browser ini.');
+    _lhMusicCtx=_lhMusicCtx||new AC();_lhMusicCtx.resume();_lhMusicStep=0;
+    const notes=[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46,523.25,659.25,783.99,1046.5,880,783.99,659.25,587.33];
+    _lhMusicTimer=setInterval(()=>{if(!_lhMusicCtx||_lhMusicCtx.state!=='running')return;const t=_lhMusicCtx.currentTime,osc=_lhMusicCtx.createOscillator(),gain=_lhMusicCtx.createGain();osc.type='triangle';osc.frequency.value=notes[_lhMusicStep++%notes.length];gain.gain.setValueAtTime(0.0001,t);gain.gain.exponentialRampToValueAtTime(0.045,t+0.025);gain.gain.exponentialRampToValueAtTime(0.0001,t+0.22);osc.connect(gain);gain.connect(_lhMusicCtx.destination);osc.start(t);osc.stop(t+0.23);},260);
+    if(btn)btn.textContent='🔇 Matikan musik';
+  }catch(e){if(btn)btn.textContent='🎵 Musik tidak tersedia';}
+}
+window.toggleLearnHubQuizMusic=toggleLearnHubQuizMusic;
+
 function renderQuizLevels(id,rawQs){
  const m=material(id), title=m?.title||id, states=quizLevelState(id), names=quizLevelNames();
  const mastered=names.reduce((n,_,i)=>n+(states[i+1]?.percent===100?1:0),0);
@@ -1002,7 +1092,7 @@ function renderQuizLevels(id,rawQs){
  <p>Taklukkan setiap level. Kamu harus mendapatkan <b>100%</b> untuk membuka level berikutnya.</p>
  <div class=quiz-xp>🏆 Progress Level: ${mastered}/${names.length} · 📚 Bank soal terkurasi</div></div></section>
  <div class=quiz-level-grid>${cards}</div>
- <div class=quiz-save style="margin-top:16px">⚡ Setiap level memakai bank soal yang sudah disusun khusus untuk levelnya. Tidak ada pembuatan opsi random saat kuis berjalan, jadi tidak akan muncul opsi duplikat atau tidak nyambung.</div>`;
+ ${m?.courseId==='pancasila'?'<div class=quiz-save style="margin-top:16px">🧩 Format bertahap: Level 1 Pilihan Ganda · Level 2 + Benar/Salah · Level 3 + Pilihan Ganda Kompleks · Level 4 + Mencocokkan · Level 5 + Isian Singkat.</div>':'<div class=quiz-save style="margin-top:16px">⚡ Setiap level memakai bank soal yang sudah disusun khusus untuk levelnya. Tidak ada pembuatan opsi random saat kuis berjalan, jadi tidak akan muncul opsi duplikat atau tidak nyambung.</div>'}`;
 }
 
 function isUTSBank(type,rawQs,id){
@@ -1026,7 +1116,7 @@ function runQuizGame(type,id,levelNo,rawQs){
  const qs=(type==='uts'?shuffleUTSQuestions(utsQs,id):levelQuestions(rawQs,id,levelNo)).map((q,index)=>{
    if(q.type==='mcq'||q.type==='tf'||q.type==='multi'){
      const options=(q.options||[]).map((o,i)=>typeof o==='string'?{text:o,feedback:''}:o);
-     if(q.type==='tf')return {...q,options:[{text:'Benar',feedback:'Periksa apakah seluruh pernyataan sesuai dengan konsep yang diuji.'},{text:'Salah',feedback:'Periksa bagian spesifik dari pernyataan yang menentukan benar atau salahnya klaim.'}],answer:q.correct[0]===0?0:1};
+     if(q.type==='tf')return {...q,options:(material(id)?.courseId==='pancasila'&&Array.isArray(q.options)&&q.options.length===2?q.options:[{text:'Benar',feedback:'Periksa apakah seluruh pernyataan sesuai dengan konsep yang diuji.'},{text:'Salah',feedback:'Periksa bagian spesifik dari pernyataan yang menentukan benar atau salahnya klaim.'}]),answer:material(id)?.courseId==='pancasila'?(Number(q.answer??q.correct?.[0]??0)===0?0:1):(q.correct[0]===0?0:1)};
      if(q.type==='multi')return {...q,options,correct:q.correct,answer:q.correct};
      const correct=options[q.correct[0]??q.answer]; const wrong=options.filter((_,i)=>i!==(q.correct[0]??q.answer));
      let seed=2166136261;const keystr=type+'|'+id+'|'+levelNo+'|'+(q.id||index);for(let i=0;i<keystr.length;i++){seed^=keystr.charCodeAt(i);seed=Math.imul(seed,16777619)}
@@ -1039,7 +1129,7 @@ function runQuizGame(type,id,levelNo,rawQs){
 
  const levelMinutes=type==='uts'?60:([20,18,16,14,12][Math.max(0,levelNo-1)]||12);
  const isUTS=type==='uts';
- const draftKey=(type==='material'?'levelquiz_':'quiz_')+key+'_'+levelNo+(type==='uts'?'_n'+qs.length:'');
+ const draftKey=(type==='material'?'levelquiz_':'quiz_')+key+'_'+levelNo+(type==='uts'?'_n'+qs.length:(type==='material'&&material(id)?.courseId==='pancasila'?'_v86':''));
  const savedDraft=PROG.drafts?.[draftKey], savedTime=savedDraft?.remainingSeconds;
  let state=savedDraft?.answers?{i:Math.min(savedDraft.i||0,qs.length-1),answers:savedDraft.answers.slice(0,qs.length),submitted:false,remainingSeconds:(isUTS?levelMinutes*60:(Number.isFinite(savedTime)?savedTime:levelMinutes*60)),questionStartedAt:Number(savedDraft.questionStartedAt)||Date.now(),points:Number(savedDraft.points)||0,streak:Number(savedDraft.streak)||0,bestStreak:Number(savedDraft.bestStreak)||0,spent:Array.isArray(savedDraft.spent)?savedDraft.spent.slice(0,qs.length):Array(qs.length).fill(0),multiChecked:Array.isArray(savedDraft.multiChecked)?savedDraft.multiChecked.slice(0,qs.length):Array(qs.length).fill(false)}
  :{i:0,answers:Array(qs.length).fill(null),submitted:false,remainingSeconds:levelMinutes*60,questionStartedAt:Date.now(),points:0,streak:0,bestStreak:0,spent:Array(qs.length).fill(0),multiChecked:Array(qs.length).fill(false)};
@@ -1128,7 +1218,7 @@ function runQuizGame(type,id,levelNo,rawQs){
    app.innerHTML=`<a class=back href="#/quiz/${id}">← Kembali ke Level</a>
    <div class=quiz-head><div><div class=eyebrow>🎮 ${type==='uts'?'Ujian Tengah Semester':'Kuis Materi'} · Level ${levelNo}</div>
    <h1 style="margin:4px 0">${esc(title)}</h1><div class=muted>${answered}/${qs.length} soal dijawab · ${type==='material'?['Pemanasan Konsep','Speed Challenge','Analisis','Master Challenge','Ultimate'][levelNo-1]: 'Ujian'}</div>
-   ${isUTS?'':`<div class=quiz-score-live><span class=quiz-score-pill>🏆 ${state.points} poin</span><span class=quiz-score-pill>🔥 ${state.streak} streak</span><span class=quiz-speed>⚡ Jawab cepat = poin lebih besar · Combo streak +10/soal (maks +50)</span></div>`}</div>
+   ${isUTS?'':`<div class=quiz-score-live><span class=quiz-score-pill>🏆 ${state.points} poin</span><span class=quiz-score-pill>🔥 ${state.streak} streak</span><span class=quiz-speed>⚡ Jawab cepat = poin lebih besar · Combo streak +10/soal (maks +50)</span></div>${material(id)?.courseId==='pancasila'?`<button id=lh-quiz-music class="btn ghost" style="margin-top:8px" type="button" onclick="toggleLearnHubQuizMusic()">${_lhMusicTimer?'🔇 Matikan musik':'🎵 Putar musik'}</button>`:''}`}</div>
    <div class=quiz-timer id=quiz-timer>${formatTime(state.remainingSeconds)}</div></div>
    <div class=progress><i style="width:${Math.round((answered/qs.length)*100)}%"></i></div>
    <div class=question-palette>${palette}</div>
@@ -1148,7 +1238,7 @@ function runQuizGame(type,id,levelNo,rawQs){
  window.prev=()=>{if(state.i>0)moveTo(state.i-1)};
  window.submitQuiz=()=>finish(false);
  function drawResult(){
-   clearInterval(timerId);const rec=PROG[bucket]?.[key],score=rec?.score??0,percent=rec?.percent??0,points=rec?.points??0;
+   clearInterval(timerId);if(_lhMusicTimer){clearInterval(_lhMusicTimer);_lhMusicTimer=null;try{_lhMusicCtx?.suspend()}catch(e){}}const rec=PROG[bucket]?.[key],score=rec?.score??0,percent=rec?.percent??0,points=rec?.points??0;
    const wrong=qs.filter((q,i)=>!isCorrect(q,state.answers[i]));
    const unlockedNext=type==='material'&&percent===100&&levelNo<5;
    app.innerHTML=`<a class=back href="#/quiz/${id}">← Kembali ke Level</a>
@@ -1755,11 +1845,41 @@ function renderRewardShop(){
  <div class=reward-section-title><h2>🎒 Inventori</h2><span class=meta>Hadiah yang sudah kamu beli</span></div>
  <div class=card>${inv.length?`<div class=reward-inventory>${inv.map(x=>`<div class=reward-inv-row><div><b>${x.icon} ${esc(x.name)}</b><div class=meta>${esc(x.desc)}</div></div><div style="text-align:right"><div><span class=reward-active>${rewardActive(x.id)?'AKTIF':'x'+rewardOwned(x.id)}</span></div>${rewardOwned(x.id)&&!rewardActive(x.id)?`<button class="btn ghost" style="margin-top:7px" onclick="rewardUse('${x.id}')">Pakai</button>`:''}</div></div>`).join('')}</div>`:'<div class=reward-empty>🎒 Inventori masih kosong. Kumpulkan poin dari kuis lalu beli hadiah pertamamu!</div>'}</div>`;
 }
+// ===== Dana KIP-K: pencatatan pengeluaran pribadi =====
+const KIPK_STORE='learnhub_kipk_ledger_v1';
+const KIPK_DEFAULT={semesterAmount:8400000,disbursementDate:'2026-10-07',transactions:[]};
+function loadKIPK(){try{const saved=JSON.parse(localStorage.getItem(KIPK_STORE)||'{}');return {...KIPK_DEFAULT,...saved,transactions:Array.isArray(saved.transactions)?saved.transactions:[]}}catch(e){return {...KIPK_DEFAULT,transactions:[]}}}
+let KIPK=loadKIPK();
+function saveKIPK(){localStorage.setItem(KIPK_STORE,JSON.stringify(KIPK))}
+function kipkMoney(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0)}
+function kipkMonthKey(date){return String(date||'').slice(0,7)}
+function kipkMonthName(key){if(!/^\d{4}-\d{2}$/.test(key))return key;return new Date(Number(key.slice(0,4)),Number(key.slice(5,7))-1,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'})}
+function kipkMonthBudget(key){const start=KIPK.disbursementDate||'2026-10-07';const startKey=kipkMonthKey(start);if(key<startKey)return 0;const [sy,sm,sd]=start.split('-').map(Number);const [y,m]=key.split('-').map(Number);const diff=(y-sy)*12+(m-sm);if(diff<0||diff>5)return 0;const monthly=Number(KIPK.semesterAmount||0)/6;if(diff===0){const days=new Date(sy,sm,0).getDate();return Math.round(monthly*(days-sd+1)/days)}return Math.round(monthly)}
+function kipkExpenseTotal(list=KIPK.transactions){return list.reduce((sum,x)=>sum+Math.max(0,Number(x.amount)||0),0)}
+function renderKIPK(){
+ const today=new Date();const currentKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0');
+ const months=[];const [sy,sm]=String(KIPK.disbursementDate||'2026-10-07').split('-').map(Number);for(let i=0;i<6;i++){const d=new Date(sy,sm-1+i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}
+ const selected=months.includes(new URLSearchParams(location.hash.split('?')[1]||'').get('bulan'))?new URLSearchParams(location.hash.split('?')[1]||'').get('bulan'):(months.includes(currentKey)?currentKey:months[0]);
+ const monthRows=KIPK.transactions.filter(x=>kipkMonthKey(x.date)===selected).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ const monthBudget=kipkMonthBudget(selected),monthSpent=kipkExpenseTotal(monthRows),semesterSpent=kipkExpenseTotal(),semesterLeft=Number(KIPK.semesterAmount||0)-semesterSpent,monthLeft=monthBudget-monthSpent;
+ const fmtDate=d=>{if(!d)return '-';const [y,m,day]=d.split('-').map(Number);return new Date(y,m-1,day).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})};
+ app.innerHTML=`<a class="back" href="#/">← Kembali ke beranda</a><div class="hero"><div><div class="eyebrow">💳 Keuangan pribadi</div><h1>Catatan Dana KIP-K</h1><p>Catat setiap pengeluaran supaya lu tahu uang beasiswa dipakai untuk apa, kapan, dan berapa saldo yang masih tersedia.</p></div></div>
+ <div class="kipk-summary"><div class="kipk-stat"><small>Saldo awal semester</small><strong>${kipkMoney(KIPK.semesterAmount)}</strong><span class="meta">Dana yang diterima untuk 6 bulan</span></div><div class="kipk-stat"><small>Saldo utama tersisa</small><strong>${kipkMoney(semesterLeft)}</strong><span class="meta">Saldo awal dikurangi semua pengeluaran</span></div><div class="kipk-stat"><small>Total pengeluaran tercatat</small><strong>${kipkMoney(semesterSpent)}</strong><span class="meta">${KIPK.transactions.length} transaksi</span></div></div>
+ <div class="kipk-help"><b>📅 Jatah bulanan</b><br>Perhitungan dasar: ${kipkMoney(Number(KIPK.semesterAmount||0)/6)} per bulan. Karena dana lu cair pada ${fmtDate(KIPK.disbursementDate)}, jatah Oktober dihitung prorata dari tanggal pencairan sampai akhir bulan: <b>${kipkMoney(kipkMonthBudget(months[0]))}</b>. Bulan berikutnya dihitung penuh. Ini alat bantu anggaran pribadi, bukan aturan resmi pencairan KIP-K.</div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px"><section class="card"><h2 style="margin-top:0">➕ Catat pengeluaran</h2><form id="kipkExpenseForm" class="kipk-form"><label>Tanggal<input name="date" type="date" required value="${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}"></label><label>Nominal (Rp)<input name="amount" type="number" min="1" step="1" required placeholder="Contoh: 25000"></label><label>Kategori<select name="category"><option>Kebutuhan kuliah</option><option>Makan & minum</option><option>Transportasi</option><option>Tempat tinggal</option><option>Kuota & internet</option><option>Perlengkapan</option><option>Kesehatan</option><option>Tabungan</option><option>Lainnya</option></select></label><label>Untuk apa?<input name="purpose" maxlength="100" required placeholder="Contoh: beli kertas tugas"></label><label class="wide">Catatan tambahan (opsional)<textarea name="note" rows="2" maxlength="300" placeholder="Detail kalau diperlukan..."></textarea></label><div class="wide"><button class="btn primary" type="submit" style="width:100%">Simpan pengeluaran</button></div></form></section>
+ <section class="card"><h2 style="margin-top:0">⚙️ Pengaturan semester</h2><form id="kipkSettingsForm" class="kipk-form"><label class="wide">Total dana semester (Rp)<input name="semesterAmount" type="number" min="1" required value="${Number(KIPK.semesterAmount)||8400000}"></label><label class="wide">Tanggal dana cair<input name="disbursementDate" type="date" required value="${esc(KIPK.disbursementDate||'2026-10-07')}"></label><div class="wide"><button class="btn ghost" type="submit">Simpan pengaturan</button></div></form><p class="meta" style="margin-top:12px">Default: Rp8.400.000 untuk 6 bulan, cair 7 Oktober 2026. Ubah jika data pencairan lu berbeda.</p><div class="callout"><b>Catatan:</b> data transaksi disimpan di browser/perangkat ini. Data tidak otomatis tersinkron ke HP atau laptop lain.</div></section></div>
+ <section class="section card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2 style="margin:0">📊 Rincian bulanan</h2><p class="meta">Lihat jatah dan pengeluaran per bulan.</p></div><select id="kipkMonthSelect" class="kipk-month-select" aria-label="Pilih bulan">${months.map(k=>`<option value="${k}" ${k===selected?'selected':''}>${esc(kipkMonthName(k))}</option>`).join('')}</select></div><div class="kipk-summary"><div class="kipk-stat"><small>Jatah bulan ini</small><strong>${kipkMoney(monthBudget)}</strong></div><div class="kipk-stat"><small>Terpakai bulan ini</small><strong>${kipkMoney(monthSpent)}</strong></div><div class="kipk-stat"><small>Sisa jatah bulan ini</small><strong style="color:${monthLeft<0?'var(--bad)':'var(--good)'}">${kipkMoney(monthLeft)}</strong></div></div><div class="kipk-monthbar"><i style="width:${monthBudget>0?Math.min(100,monthSpent/monthBudget*100):0}%"></i></div><p class="meta">${monthBudget>0?(monthSpent>monthBudget?'Pengeluaran bulan ini melewati jatah bulanan. Cek saldo utama sebelum transaksi berikutnya.':Math.round(monthSpent/monthBudget*100)+'% dari jatah bulanan sudah digunakan.'):'Bulan ini berada di luar periode anggaran 6 bulan yang disetel.'}</p><h3>Daftar transaksi — ${esc(kipkMonthName(selected))}</h3><div class="kipk-ledger">${monthRows.length?monthRows.map(x=>`<div class="kipk-entry"><div class="kipk-entry-main"><strong>${esc(x.purpose)}</strong><small>${fmtDate(x.date)} · ${esc(x.category)}${x.note?' · '+esc(x.note):''}</small></div><div style="display:flex;align-items:center;gap:10px"><span class="kipk-entry-amount">−${kipkMoney(x.amount)}</span><button class="btn ghost" style="padding:7px 9px" onclick="deleteKIPKExpense('${x.id}')" aria-label="Hapus transaksi">✕</button></div></div>`).join(''):'<div class="empty">Belum ada pengeluaran yang dicatat untuk bulan ini.</div>'}</div></section>`;
+ $('#kipkExpenseForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget,fd=new FormData(f),amount=Number(fd.get('amount'));if(!Number.isFinite(amount)||amount<=0){alert('Masukkan nominal pengeluaran yang valid.');return}const item={id:'kipk-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),date:String(fd.get('date')),amount,category:String(fd.get('category')),purpose:String(fd.get('purpose')).trim(),note:String(fd.get('note')||'').trim(),createdAt:Date.now()};KIPK.transactions.push(item);saveKIPK();renderKIPK()});
+ $('#kipkSettingsForm').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.currentTarget),amount=Number(fd.get('semesterAmount'));if(!Number.isFinite(amount)||amount<=0){alert('Total dana harus lebih dari nol.');return}KIPK.semesterAmount=amount;KIPK.disbursementDate=String(fd.get('disbursementDate'));saveKIPK();renderKIPK()});
+ $('#kipkMonthSelect').addEventListener('change',e=>{location.hash='#/kipk?bulan='+encodeURIComponent(e.target.value);});
+}
+window.deleteKIPKExpense=id=>{const item=KIPK.transactions.find(x=>x.id===id);if(!item)return;if(confirm('Hapus transaksi “'+item.purpose+'”? Saldo akan dihitung ulang.')){KIPK.transactions=KIPK.transactions.filter(x=>x.id!==id);saveKIPK();renderKIPK()}};
+
 function renderSidebar(){
- nav.innerHTML=`<div class="sidebar-section" style="margin-top:0"><a class="sidebar-link" href="#/profile">👤 <b>${esc(PROFILE.name||'Profil Saya')}</b><br><small style="padding-left:25px;color:var(--muted)">Profil & statistik</small></a></div><a class="sidebar-link" href="#/dashboard">📊 Dashboard</a><a class="sidebar-link" href="#/materials-tasks">📚 Bahan & Tugas</a><a class="sidebar-link" href="#/tasks">📋 Daftar Tugas</a><a class="sidebar-link" href="#/schedule">🗓️ Jadwal Kuliah</a><a class="sidebar-link" href="#/attendance">📋 Dashboard Kehadiran</a><a class="sidebar-link" href="#/calendar">📅 Kalender Kuliah</a><a class="sidebar-link" href="#/notes">✏️ Catatan Saya</a><div class="sidebar-section"><div class=sidebar-section-title>Ruang Belajar</div><a class=sidebar-link href="#/lecturer-docs">📂 Materi Dosen</a><a class=sidebar-link href="#/quizzes">🎮 Kuis</a><a class=sidebar-link href="#/rewards">🎁 Hadiah</a></div><div class="sidebar-section"><div class=sidebar-section-title>Semester</div>${D.semesters.map(s=>{const cs=D.courses.filter(c=>c.semester===s);return `<div class=sidebar-semester><button onclick="toggleSemester(${s})">${s<10?'Semester '+s:'Semester '+s} <span style="float:right">${cs.length?'›':''}</span></button><div id="side-sem-${s}" class=sidebar-course>${cs.map(c=>`<a class=sidebar-link href="#/course/${c.id}">${esc(c.name)}</a>`).join('')||'<span class="meta" style="display:block;padding:5px 18px">Belum ada mata kuliah</span>'}</div></div>`}).join('')}</div><div class="sidebar-section sidebar-results"><div class=sidebar-section-title>Hasil Belajar</div><a class=sidebar-link href="#/results/quizzes">📝 Hasil Kuis</a><a class=sidebar-link href="#/results/uts">🎯 Hasil UTS</a></div>`;
+ nav.innerHTML=`<div class="sidebar-section" style="margin-top:0"><a class="sidebar-link" href="#/profile">👤 <b>${esc(PROFILE.name||'Profil Saya')}</b><br><small style="padding-left:25px;color:var(--muted)">Profil & statistik</small></a></div><a class="sidebar-link" href="#/dashboard">📊 Dashboard</a><a class="sidebar-link" href="#/kipk">💳 Dana KIP-K</a><a class="sidebar-link" href="#/materials-tasks">📚 Bahan & Tugas</a><a class="sidebar-link" href="#/tasks">📋 Daftar Tugas</a><a class="sidebar-link" href="#/schedule">🗓️ Jadwal Kuliah</a><a class="sidebar-link" href="#/attendance">📋 Dashboard Kehadiran</a><a class="sidebar-link" href="#/calendar">📅 Kalender Kuliah</a><a class="sidebar-link" href="#/notes">✏️ Catatan Saya</a><div class="sidebar-section"><div class=sidebar-section-title>Ruang Belajar</div><a class=sidebar-link href="#/lecturer-docs">📂 Materi Dosen</a><a class=sidebar-link href="#/quizzes">🎮 Kuis</a><a class=sidebar-link href="#/rewards">🎁 Hadiah</a></div><div class="sidebar-section"><div class=sidebar-section-title>Semester</div>${D.semesters.map(s=>{const cs=D.courses.filter(c=>c.semester===s);return `<div class=sidebar-semester><button onclick="toggleSemester(${s})">${s<10?'Semester '+s:'Semester '+s} <span style="float:right">${cs.length?'›':''}</span></button><div id="side-sem-${s}" class=sidebar-course>${cs.map(c=>`<a class=sidebar-link href="#/course/${c.id}">${esc(c.name)}</a>`).join('')||'<span class="meta" style="display:block;padding:5px 18px">Belum ada mata kuliah</span>'}</div></div>`}).join('')}</div><div class="sidebar-section sidebar-results"><div class=sidebar-section-title>Hasil Belajar</div><a class=sidebar-link href="#/results/quizzes">📝 Hasil Kuis</a><a class=sidebar-link href="#/results/uts">🎯 Hasil UTS</a></div>`;
 }
 window.toggleSemester=s=>{const el=document.getElementById('side-sem-'+s);if(el)el.classList.toggle('open');const btn=el?.parentElement;if(btn)btn.classList.toggle('open')};
-function route(){const raw=location.hash.slice(1)||'/';const p=raw.split('?')[0]||'/';sidebar.classList.remove('open');document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===('#'+p)));if(p==='/')return renderHome();if(p==='/dashboard')return renderDashboard();if(p==='/profile')return renderProfile();if(p==='/materials-tasks')return renderMaterialsTasks();if(p==='/tasks')return renderTasks();if(p==='/schedule')return renderSchedule();if(p==='/attendance')return renderAttendance();if(p==='/calendar')return renderCalendar();if(p==='/notes')return renderNotes();let nm=p.match(/^\/note\/([^/]+)$/);if(nm)return renderNoteDetail(nm[1]);if(p==='/lecturer-docs')return renderLecturerDocs();let qroom=p.match(/^\/quizzes\/([^/]+)$/);if(qroom)return renderQuizCourseRoom(qroom[1]);if(p==='/quizzes')return renderQuizHub();if(p==='/rewards')return renderRewardShop();if(p==='/results/quizzes')return renderQuizResults();let qr=p.match(/^\/quiz-review\/([^/]+)$/);if(qr)return renderQuizReview(qr[1]);if(p==='/results/uts')return renderUTSResults();let ur=p.match(/^\/uts-review\/([^/]+)$/);if(ur)return renderUTSReview(ur[1]);let m=p.match(/^\/semester\/(\d+)$/);if(m)return renderSemester(+m[1]);m=p.match(/^\/course\/([^/]+)$/);if(m)return renderCourse(m[1]);m=p.match(/^\/material\/([^/]+)$/);if(m)return renderMaterial(m[1]);m=p.match(/^\/lecturer\/([^/]+)$/);if(m)return renderLecturerMode(m[1]);let ql=p.match(/^\/quiz\/([^/]+)\/level\/(\d+)$/);if(ql)return quizPage('material',ql[1],+ql[2]);m=p.match(/^\/quiz\/([^/]+)$/);if(m)return quizPage('material',m[1]);m=p.match(/^\/uts\/([^/]+)$/);if(m)return quizPage('uts',m[1]);render404()}
+function route(){const raw=location.hash.slice(1)||'/';const p=raw.split('?')[0]||'/';sidebar.classList.remove('open');document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===('#'+p)));if(p==='/')return renderHome();if(p==='/dashboard')return renderDashboard();if(p==='/kipk')return renderKIPK();if(p==='/profile')return renderProfile();if(p==='/materials-tasks')return renderMaterialsTasks();if(p==='/tasks')return renderTasks();if(p==='/schedule')return renderSchedule();if(p==='/attendance')return renderAttendance();if(p==='/calendar')return renderCalendar();if(p==='/notes')return renderNotes();let nm=p.match(/^\/note\/([^/]+)$/);if(nm)return renderNoteDetail(nm[1]);if(p==='/lecturer-docs')return renderLecturerDocs();let qroom=p.match(/^\/quizzes\/([^/]+)$/);if(qroom)return renderQuizCourseRoom(qroom[1]);if(p==='/quizzes')return renderQuizHub();if(p==='/rewards')return renderRewardShop();if(p==='/results/quizzes')return renderQuizResults();let qr=p.match(/^\/quiz-review\/([^/]+)$/);if(qr)return renderQuizReview(qr[1]);if(p==='/results/uts')return renderUTSResults();let ur=p.match(/^\/uts-review\/([^/]+)$/);if(ur)return renderUTSReview(ur[1]);let m=p.match(/^\/semester\/(\d+)$/);if(m)return renderSemester(+m[1]);m=p.match(/^\/course\/([^/]+)$/);if(m)return renderCourse(m[1]);m=p.match(/^\/material\/([^/]+)$/);if(m)return renderMaterial(m[1]);m=p.match(/^\/lecturer\/([^/]+)$/);if(m)return renderLecturerMode(m[1]);let ql=p.match(/^\/quiz\/([^/]+)\/level\/(\d+)$/);if(ql)return quizPage('material',ql[1],+ql[2]);m=p.match(/^\/quiz\/([^/]+)$/);if(m)return quizPage('material',m[1]);m=p.match(/^\/uts\/([^/]+)$/);if(m)return quizPage('uts',m[1]);render404()}
 renderProfileHeader();
 renderSidebar();
 $("#menuBtn").onclick=()=>{const opening=!sidebar.classList.contains('open');sidebar.classList.toggle('open');if(opening)sidebar.scrollTop=0};

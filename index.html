@@ -517,6 +517,18 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
 </aside>
 <main id="app"></main>
 </div>
+<button id="lhCloudOpen" class="btn primary" style="position:fixed;right:14px;bottom:82px;z-index:80;box-shadow:0 6px 20px #0002">☁️ Simpan Cloud</button>
+<div id="lhCloudModal" style="display:none;position:fixed;inset:0;z-index:200;background:#10182899;align-items:center;justify-content:center;padding:16px">
+ <section style="width:min(100%,440px);background:var(--panel,#fff);color:var(--text,#172033);border:1px solid var(--line,#ddd);border-radius:18px;padding:22px;box-shadow:0 18px 60px #0003">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">LearnHub Cloud</h2><button id="lhCloudClose" class="icon-btn" aria-label="Tutup">✕</button></div>
+  <p style="font-size:13px;color:var(--muted,#68738a)">Login dengan email untuk menyimpan data LearnHub ke Firebase dan membukanya di perangkat lain. Data lokal tidak dihapus.</p>
+  <label style="display:block;margin-top:12px">Email<input id="lhCloudEmail" type="email" autocomplete="email" style="display:block;width:100%;padding:11px;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--bg,#fff);color:inherit"></label>
+  <label style="display:block;margin-top:10px">Password<input id="lhCloudPass" type="password" autocomplete="current-password" style="display:block;width:100%;padding:11px;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--bg,#fff);color:inherit"></label>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"><button id="lhCloudLogin" class="btn primary">Login</button><button id="lhCloudSignup" class="btn ghost">Buat akun</button></div>
+  <div id="lhCloudSigned" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line,#ddd)"><p id="lhCloudWho" style="margin:0 0 10px"></p><div style="display:flex;flex-wrap:wrap;gap:8px"><button id="lhCloudUpload" class="btn primary">Simpan data perangkat ini</button><button id="lhCloudRestore" class="btn ghost">Ambil data dari cloud</button><button id="lhCloudLogout" class="btn ghost">Logout</button></div></div>
+  <p id="lhCloudStatus" role="status" style="font-size:13px;margin:14px 0 0;overflow-wrap:anywhere">Belum terhubung.</p>
+ </section>
+</div>
 <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Navigasi utama mobile">
 <a href="#/" data-nav="home" aria-label="Beranda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></svg><span>Beranda</span></a>
 <a href="#/lecturer-docs" data-nav="materials" aria-label="Materi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H20v18H7.5A3.5 3.5 0 0 0 4 23z"/><path d="M4 5.5v14A3.5 3.5 0 0 1 7.5 16H20M9 6h7M9 10h7"/></svg><span>Materi</span></a>
@@ -2130,4 +2142,27 @@ if(localStorage.getItem('dark')==='true')document.body.classList.add('dark');
 $("#search").addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$("#searchResults");if(!q){box.classList.remove('show');return}const results=[...D.courses.filter(c=>(c.name+' '+c.code+' '+c.description).toLowerCase().includes(q)).map(c=>({label:c.name,sub:`Semester ${c.semester} · Mata Kuliah`,href:`#/course/${c.id}`})),...D.materials.filter(m=>(m.title+' '+m.summary+' '+m.keyPoints.join(' ')+' '+m.terms.flat().join(' ')).toLowerCase().includes(q)).map(m=>({label:m.title,sub:`Materi · ${D.courses.find(c=>c.id===m.courseId)?.name||'Mata Kuliah'}`,href:`#/material/${m.id}`}))].slice(0,8);box.innerHTML=results.length?results.map(r=>`<div class=search-item onclick="go('${r.href}')"><b>${esc(r.label)}</b><br><small>${esc(r.sub)}</small></div>`).join(''):`<div class=search-item>Tidak ditemukan.</div>`;box.classList.add('show')});
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))$("#searchResults").classList.remove('show')});
 window.addEventListener('hashchange',route);route();
-</script></body></html>
+</script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+(()=>{
+ const cfg={apiKey:"AIzaSyDdaiPKqIpWVClNxPTs9Qh0kOyQxNy0gR4",authDomain:"learnhub-b6470.firebaseapp.com",projectId:"learnhub-b6470",storageBucket:"learnhub-b6470.firebasestorage.app",messagingSenderId:"792626688932",appId:"1:792626688932:web:452b935f9bc166d5488731",measurementId:"G-YQ8WYDZ67H"};
+ const $=id=>document.getElementById(id), modal=$('lhCloudModal'), status=$('lhCloudStatus'); let auth,db;
+ const say=t=>{if(status)status.textContent=t};
+ try{if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore()}catch(e){say('Firebase belum bisa dimulai: '+e.message)}
+ $('lhCloudOpen').onclick=()=>{modal.style.display='flex';if(auth?.currentUser)showUser(auth.currentUser)};
+ $('lhCloudClose').onclick=()=>modal.style.display='none'; modal.addEventListener('click',e=>{if(e.target===modal)modal.style.display='none'});
+ function showUser(user){$('lhCloudSigned').style.display=user?'block':'none';$('lhCloudWho').textContent=user?'Login sebagai '+user.email:'';if(user)say('Sudah login. Pilih simpan ke cloud atau ambil data dari cloud.');else say('Belum login.');}
+ async function signIn(create){const email=$('lhCloudEmail').value.trim(),password=$('lhCloudPass').value;if(!email||!password){say('Isi email dan password dulu.');return}try{say(create?'Membuat akun…':'Login…');const r=create?await auth.createUserWithEmailAndPassword(email,password):await auth.signInWithEmailAndPassword(email,password);showUser(r.user)}catch(e){say('Gagal: '+friendly(e))}}
+ function friendly(e){const m={'auth/email-already-in-use':'Email ini sudah terdaftar. Coba Login.','auth/invalid-email':'Format email belum benar.','auth/weak-password':'Password minimal 6 karakter.','auth/invalid-credential':'Email atau password salah.','auth/network-request-failed':'Koneksi internet bermasalah.','permission-denied':'Akses Firestore ditolak. Aturan keamanan Firestore perlu dipasang.'};return m[e.code]||e.message||'Terjadi kesalahan.'}
+ $('lhCloudLogin').onclick=()=>signIn(false);$('lhCloudSignup').onclick=()=>signIn(true);
+ $('lhCloudLogout').onclick=async()=>{await auth.signOut();showUser(null)};
+ function localEntries(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v==null)continue;out[k]=v;}return out}
+ async function upload(){const u=auth.currentUser;if(!u){say('Login dulu.');return}try{const data=localEntries(), entries=Object.entries(data);say('Menyimpan '+entries.length+' bagian data…');for(let i=0;i<entries.length;i+=400){const batch=db.batch();for(const [key,value] of entries.slice(i,i+400)){const id=btoa(unescape(encodeURIComponent(key))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'').slice(0,140);batch.set(db.collection('users').doc(u.uid).collection('items').doc(id),{key,value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()})}await batch.commit()}say('Berhasil menyimpan data browser ke cloud. File lampiran yang hanya ada di IndexedDB belum ikut tersalin.')}catch(e){say('Belum berhasil menyimpan: '+friendly(e))}}
+ async function restore(){const u=auth.currentUser;if(!u){say('Login dulu.');return}if(!confirm('Data cloud akan digabungkan ke perangkat ini. Jika ada kunci yang sama, nilai dari cloud akan menggantikan nilai lokal. Lanjut?'))return;try{say('Mengambil data dari cloud…');const snap=await db.collection('users').doc(u.uid).collection('items').get();if(snap.empty){say('Belum ada data di cloud. Tekan “Simpan data perangkat ini” di perangkat yang memiliki data terbaru.');return}let n=0;snap.forEach(doc=>{const d=doc.data();if(typeof d.key==='string'&&typeof d.value==='string'){localStorage.setItem(d.key,d.value);n++}});say('Selesai mengambil '+n+' bagian data. Muat ulang halaman untuk melihat semua perubahan.');}catch(e){say('Belum berhasil mengambil data: '+friendly(e))}}
+ $('lhCloudUpload').onclick=upload;$('lhCloudRestore').onclick=restore;
+ auth?.onAuthStateChanged(showUser);
+})();
+</script>
+</body></html>

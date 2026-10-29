@@ -2163,6 +2163,40 @@ window.addEventListener('hashchange',route);route();
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
+/* LearnHub Auto-Sync: cloud listener + debounced localStorage updates. */
+(()=>{
+ const cfg={apiKey:"AIzaSyDdaiPKqIpWVClNxPTs9Qh0kOyQxNy0gR4",authDomain:"learnhub-b6470.firebaseapp.com",projectId:"learnhub-b6470",storageBucket:"learnhub-b6470.firebasestorage.app",messagingSenderId:"792626688932",appId:"1:792626688932:web:452b935f9bc166d5488731",measurementId:"G-YQ8WYDZ67H"};
+ let auth,db,uid=null,ready=false,applyingCloud=false,timer=null,unsubscribe=null;
+ const pending=new Map();
+ const idFor=k=>btoa(unescape(encodeURIComponent(k))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'').slice(0,140);
+ const cloudCol=()=>db.collection('users').doc(uid).collection('items');
+ const setStatus=t=>{const el=document.getElementById('lhCloudStatus');if(el)el.textContent=t;};
+ const originalSet=Storage.prototype.setItem, originalRemove=Storage.prototype.removeItem, originalClear=Storage.prototype.clear;
+ function queue(k,v,deleted=false){if(!uid||!ready||applyingCloud)return;pending.set(k,{value:v,deleted});clearTimeout(timer);timer=setTimeout(flush,1200);}
+ async function flush(){if(!uid||!ready||!pending.size)return;const targetUid=uid, work=[...pending.entries()];pending.clear();try{for(let i=0;i<work.length;i+=400){const batch=db.batch();for(const [key,item] of work.slice(i,i+400)){const ref=cloudCol().doc(idFor(key));if(item.deleted)batch.delete(ref);else batch.set(ref,{key,value:item.value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});}await batch.commit();}if(uid===targetUid)setStatus('Auto-sync aktif ✓ Perubahan tersimpan ke cloud.');}catch(e){work.forEach(([k,v])=>{if(!pending.has(k))pending.set(k,v)});setStatus('Auto-sync tertunda: '+(e.message||'periksa koneksi'));}}
+ Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&typeof k==='string'&&typeof v==='string')queue(k,v,false);};
+ Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&typeof k==='string')queue(k,null,true);};
+ Storage.prototype.clear=function(){if(this===localStorage){const keys=[];for(let i=0;i<this.length;i++){const k=this.key(i);if(k)keys.push(k)}originalClear.call(this);keys.forEach(k=>queue(k,null,true));}else originalClear.call(this);};
+ function startUser(user){if(unsubscribe){unsubscribe();unsubscribe=null}uid=user?.uid||null;ready=false;pending.clear();clearTimeout(timer);if(!uid){setStatus('Belum login.');return;}
+  setStatus('Memuat data cloud untuk auto-sync…');let first=true;
+  unsubscribe=cloudCol().onSnapshot(snap=>{
+   applyingCloud=true;
+   try{
+    snap.docChanges().forEach(change=>{
+     const d=change.doc.data();if(!d||typeof d.key!=='string')return;
+     if(change.type==='removed'){if(localStorage.getItem(d.key)!==null)originalRemove.call(localStorage,d.key);pending.delete(d.key);return;}
+     if(typeof d.value==='string'&&localStorage.getItem(d.key)!==d.value){originalSet.call(localStorage,d.key,d.value);pending.delete(d.key);}
+    });
+   }finally{applyingCloud=false;}
+   if(first){first=false;ready=true;if(snap.empty){for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k){const v=localStorage.getItem(k);if(v!==null)pending.set(k,{value:v,deleted:false});}}if(pending.size){clearTimeout(timer);timer=setTimeout(flush,1200);setStatus('Cloud masih kosong. Menyiapkan data perangkat ini untuk sinkronisasi pertama…');}else setStatus('Auto-sync aktif ✓ Belum ada data untuk disinkronkan.');}else setStatus('Auto-sync aktif ✓ Data cloud sudah dimuat.');}
+  },e=>{ready=false;setStatus('Auto-sync gagal membaca cloud: '+(e.message||'periksa koneksi'));});
+ }
+ try{if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore();auth.onAuthStateChanged(startUser);}catch(e){setStatus('Auto-sync belum aktif: '+(e.message||'Firebase tidak tersedia'));}
+ window.addEventListener('online',()=>{if(pending.size){clearTimeout(timer);timer=setTimeout(flush,500)}});
+ window.addEventListener('beforeunload',()=>{if(pending.size)flush()});
+})();
+</script>
+<script>
 (()=>{
  const cfg={apiKey:"AIzaSyDdaiPKqIpWVClNxPTs9Qh0kOyQxNy0gR4",authDomain:"learnhub-b6470.firebaseapp.com",projectId:"learnhub-b6470",storageBucket:"learnhub-b6470.firebasestorage.app",messagingSenderId:"792626688932",appId:"1:792626688932:web:452b935f9bc166d5488731",measurementId:"G-YQ8WYDZ67H"};
  const $=id=>document.getElementById(id), modal=$('lhCloudModal'), status=$('lhCloudStatus'); let auth,db;

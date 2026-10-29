@@ -491,7 +491,24 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
 
 <style id="learnhub-daily-activity-style">.activity-page{max-width:1050px;margin:0 auto}.activity-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.activity-weekday{text-align:center;font-size:11px;font-weight:800;color:var(--muted);padding:7px 0}.activity-date{min-height:78px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:7px;text-align:left;cursor:pointer;overflow:hidden}.activity-date.selected{outline:2px solid var(--accent);background:var(--accent2)}.activity-date.today{border-color:var(--accent)}.activity-date .num{font-weight:800;font-size:13px}.activity-date .dot{display:block;font-size:10px;color:var(--accent);margin-top:5px;overflow-wrap:anywhere;line-height:1.3}.activity-date.empty{visibility:hidden}.activity-list{display:grid;gap:8px}.activity-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.activity-item strong{display:block}.activity-item small{display:block;color:var(--muted);margin-top:3px}.activity-item p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-actions{display:flex;gap:5px;flex-shrink:0}.activity-actions button{padding:6px 8px;font-size:11px}@media(max-width:520px){.activity-calendar{gap:3px}.activity-date{min-height:58px;padding:4px;border-radius:7px}.activity-date .num{font-size:12px}.activity-date .dot{font-size:9px;max-height:25px;overflow:hidden}.activity-weekday{font-size:10px}.activity-item{flex-direction:column}.activity-actions{align-self:flex-end}}</style>
 </head>
-<body>
+<body class="lh-locked">
+<div id="lhLoginGate" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#101827,#243b53);font-family:inherit;color:#172033">
+ <section style="width:min(100%,410px);background:#fff;border-radius:22px;padding:28px;box-shadow:0 24px 80px #0005;box-sizing:border-box">
+  <div style="font-size:13px;font-weight:800;letter-spacing:2px;color:#64748b;margin-bottom:8px">PERSONAL LEARNING HUB</div>
+  <h1 style="font-size:30px;line-height:1.15;margin:0 0 8px;color:#172033">LearnHub</h1>
+  <p style="margin:0 0 22px;color:#64748b;font-size:14px">Login dulu untuk masuk ke ruang belajar lu.</p>
+  <label for="lhGateEmail" style="display:block;font-size:13px;font-weight:700;margin-bottom:6px">Email</label>
+  <input id="lhGateEmail" type="email" autocomplete="username" placeholder="nama@email.com" style="box-sizing:border-box;width:100%;padding:13px 14px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;margin-bottom:14px;color:#172033;background:#fff">
+  <label for="lhGatePassword" style="display:block;font-size:13px;font-weight:700;margin-bottom:6px">Password</label>
+  <input id="lhGatePassword" type="password" autocomplete="current-password" placeholder="Masukkan password" style="box-sizing:border-box;width:100%;padding:13px 14px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;margin-bottom:16px;color:#172033;background:#fff">
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+   <button id="lhGateLogin" type="button" style="flex:1;min-width:120px;padding:13px;border:0;border-radius:10px;background:#2563eb;color:white;font:inherit;font-weight:800;cursor:pointer">Login</button>
+   <button id="lhGateSignup" type="button" style="flex:1;min-width:120px;padding:13px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#172033;font:inherit;font-weight:700;cursor:pointer">Buat akun</button>
+  </div>
+  <p id="lhGateStatus" role="status" aria-live="polite" style="font-size:13px;line-height:1.5;color:#475569;margin:16px 0 0">Memeriksa sesi login…</p>
+ </section>
+</div>
+<style>body.lh-locked{overflow:hidden}body.lh-locked>:not(#lhLoginGate){visibility:hidden!important;pointer-events:none!important}#lhLoginGate input:focus{outline:2px solid #93c5fd;border-color:#2563eb}#lhLoginGate button:disabled{opacity:.6;cursor:wait}</style>
 <header class="topbar">
   <button class="icon-btn" id="menuBtn" aria-label="Buka menu">☰</button>
   <a class="brand" href="#/">Learn<span>Hub</span></a>
@@ -2163,6 +2180,19 @@ window.addEventListener('hashchange',route);route();
  async function restore(){const u=auth.currentUser;if(!u){say('Login dulu.');return}if(!confirm('Data cloud akan digabungkan ke perangkat ini. Jika ada kunci yang sama, nilai dari cloud akan menggantikan nilai lokal. Lanjut?'))return;try{say('Mengambil data dari cloud…');const snap=await db.collection('users').doc(u.uid).collection('items').get();if(snap.empty){say('Belum ada data di cloud. Tekan “Simpan data perangkat ini” di perangkat yang memiliki data terbaru.');return}let n=0;snap.forEach(doc=>{const d=doc.data();if(typeof d.key==='string'&&typeof d.value==='string'){localStorage.setItem(d.key,d.value);n++}});say('Selesai mengambil '+n+' bagian data. Muat ulang halaman untuk melihat semua perubahan.');}catch(e){say('Belum berhasil mengambil data: '+friendly(e))}}
  $('lhCloudUpload').onclick=upload;$('lhCloudRestore').onclick=restore;
  auth?.onAuthStateChanged(showUser);
+})();
+</script>
+<script>
+(()=>{
+ const cfg={apiKey:"AIzaSyDdaiPKqIpWVClNxPTs9Qh0kOyQxNy0gR4",authDomain:"learnhub-b6470.firebaseapp.com",projectId:"learnhub-b6470",storageBucket:"learnhub-b6470.firebasestorage.app",messagingSenderId:"792626688932",appId:"1:792626688932:web:452b935f9bc166d5488731",measurementId:"G-YQ8WYDZ67H"};
+ const $=id=>document.getElementById(id), gate=$('lhLoginGate'), status=$('lhGateStatus'), loginBtn=$('lhGateLogin'), signupBtn=$('lhGateSignup');
+ const say=t=>{status.textContent=t};
+ let auth;
+ function friendly(e){const m={'auth/email-already-in-use':'Email ini sudah terdaftar. Tekan Login.','auth/invalid-email':'Format email belum benar.','auth/weak-password':'Password minimal 6 karakter.','auth/invalid-credential':'Email atau password salah.','auth/user-not-found':'Akun belum ditemukan. Coba Buat akun jika belum punya akun.','auth/wrong-password':'Password salah.','auth/network-request-failed':'Koneksi internet bermasalah.','auth/too-many-requests':'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'};return m[e.code]||e.message||'Terjadi kesalahan.'}
+ async function submit(create){const email=$('lhGateEmail').value.trim(),password=$('lhGatePassword').value;if(!email||!password){say('Isi email dan password dulu.');return}loginBtn.disabled=signupBtn.disabled=true;say(create?'Membuat akun…':'Login…');try{if(create){await auth.createUserWithEmailAndPassword(email,password)}else{await auth.signInWithEmailAndPassword(email,password)}say('Berhasil. Membuka LearnHub…')}catch(e){say(friendly(e));loginBtn.disabled=signupBtn.disabled=false}}
+ try{if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});auth.onAuthStateChanged(user=>{if(user){document.body.classList.remove('lh-locked');gate.style.display='none';loginBtn.disabled=signupBtn.disabled=false}else{document.body.classList.add('lh-locked');gate.style.display='flex';say('Login untuk masuk ke LearnHub.');loginBtn.disabled=signupBtn.disabled=false;$('lhGatePassword').value=''}})}catch(e){say('Firebase belum bisa dimulai. Periksa koneksi internet lalu muat ulang halaman.');loginBtn.disabled=signupBtn.disabled=false}
+ loginBtn.addEventListener('click',()=>submit(false));signupBtn.addEventListener('click',()=>submit(true));
+ $('lhGatePassword').addEventListener('keydown',e=>{if(e.key==='Enter')submit(false)});$('lhGateEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('lhGatePassword').focus()});
 })();
 </script>
 </body></html>

@@ -2305,4 +2305,45 @@ window.addEventListener('hashchange',route);route();
 .kipk-page{width:100%;max-width:760px;margin:0 auto;padding:0 14px 24px;box-sizing:border-box;overflow-x:hidden}.kipk-page *{box-sizing:border-box;min-width:0}.kipk-head{margin:10px 0 16px}.kipk-head h1{font-size:clamp(24px,6vw,32px);letter-spacing:-.04em}.kipk-head p{font-size:14px;line-height:1.5}.kipk-tabs{gap:8px;padding:5px 0 12px;margin:0 -1px 15px;scrollbar-width:none;overscroll-behavior-x:contain}.kipk-tabs::-webkit-scrollbar{display:none}.kipk-tab{padding:10px 14px;border-radius:999px;font-size:13px}.kipk-jago-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:8px 0 14px}.kipk-jago-summary .kipk-stat{min-height:142px;padding:15px;border:0;border-radius:20px;box-shadow:0 5px 18px rgba(23,36,58,.08);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:7px}.kipk-jago-summary .kipk-stat small{font-size:12px;line-height:1.35}.kipk-jago-summary .kipk-stat strong{font-size:clamp(17px,4.6vw,23px);line-height:1.25;overflow-wrap:anywhere;margin:1px 0}.kipk-jago-summary .kipk-stat span{font-size:11px;line-height:1.45;color:inherit;opacity:.82}.kipk-stat-bri{background:#fff6df!important;color:#243247!important}.kipk-stat-bri strong{color:#2457c5!important}.kipk-stat-emergency{background:#8d1048!important;color:#fff!important}.kipk-stat-reserve{background:#e7f2ff!important;color:#20314c!important}.kipk-stat-spent{background:#e3f7f5!important;color:#173d43!important}.kipk-summary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 16px}.kipk-summary-actions .btn{min-height:42px;padding:10px;font-size:12px;white-space:normal}.kipk-summary-actions .btn:last-child{grid-column:1/-1}.kipk-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kipk-mini-card{border-radius:15px;padding:13px}.kipk-bank-intro{margin:4px 0 14px}.kipk-bank-intro h2{font-size:22px;margin:4px 0}.kipk-bank-intro p{font-size:13px;line-height:1.5;color:var(--muted);margin:4px 0}.kipk-bank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kipk-bank-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;min-height:174px;padding:15px 13px;border:0;border-radius:20px;box-shadow:0 6px 18px rgba(23,36,58,.09);cursor:pointer;color:#fff;overflow:hidden;overflow-wrap:anywhere}.kipk-bank-card:focus-visible{outline:3px solid #2457c5;outline-offset:2px}.kipk-bank-icon{font-size:26px;line-height:1.2}.kipk-bank-name{font-size:14px;font-weight:800}.kipk-bank-card strong{font-size:clamp(16px,4.3vw,22px);line-height:1.25;color:inherit;overflow-wrap:anywhere}.kipk-bank-card small{font-size:11px;line-height:1.4;color:inherit;opacity:.9}.bank-seabank{background:#ed8b2c;color:#fff}.bank-gopay{background:#08a9c7;color:#fff}.bank-superbank{background:#f5f2df;color:#30312b}.bank-dana{background:#e9f0ff;color:#2457c5}.bank-jago{background:#8d1048;color:#fff}.kipk-bank-detail{display:none;font-size:11px;line-height:1.5;padding-top:8px;margin-top:2px;border-top:1px solid currentColor;opacity:.9}.kipk-bank-card.is-expanded{grid-column:1/-1;min-height:0}.kipk-bank-card.is-expanded .kipk-bank-detail{display:block}.kipk-bank-footnote{font-size:11px;line-height:1.5;color:var(--muted);margin:13px 2px}.kipk-room{width:100%;min-width:0}.kipk-panel{border-radius:16px;padding:14px}.kipk-form input,.kipk-form select,.kipk-form textarea{min-height:42px;font-size:14px}.kipk-entry{overflow-wrap:anywhere}.kipk-entry-main{flex:1}.kipk-entry-actions{flex-shrink:0}
 @media(max-width:380px){.kipk-page{padding:0 10px 20px}.kipk-jago-summary{gap:8px}.kipk-jago-summary .kipk-stat{padding:12px;min-height:136px}.kipk-jago-summary .kipk-stat strong{font-size:16px}.kipk-bank-grid{gap:9px}.kipk-bank-card{padding:12px 10px;min-height:164px}.kipk-bank-card strong{font-size:16px}.kipk-summary-actions{grid-template-columns:1fr}.kipk-summary-actions .btn:last-child{grid-column:auto}}
 </style>
+
+<style id="learnhub-mobile-fit-fix">
+/* Mobile fit: keep the app at the device width; only designated content areas scroll. */
+html, body { width:100% !important; max-width:100% !important; min-width:0 !important; margin:0 !important; overflow-x:hidden !important; }
+body { -webkit-text-size-adjust:100%; }
+*, *::before, *::after { box-sizing:border-box; }
+#app, .app, .app-shell, .main-layout, main, #mainContent, .page, .page-content, .kipk-page, .topbar, .profile-top, .profile-top-inner { min-width:0 !important; max-width:100% !important; }
+.app-shell { width:100% !important; grid-template-columns:minmax(0,1fr) !important; }
+main { width:100% !important; padding-left:14px !important; padding-right:14px !important; overflow-wrap:anywhere; }
+.topbar { width:100% !important; gap:8px !important; padding-left:10px !important; padding-right:10px !important; }
+.search-wrap { min-width:0 !important; width:auto !important; }
+.search-wrap input { min-width:0 !important; }
+.profile-top { width:100% !important; }
+.profile-top-inner { width:100% !important; gap:7px !important; }
+.profile-top-info { min-width:0 !important; }
+.profile-top-name, .profile-top-meta { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.quiz-points-header, .quiz-streak-header { flex:0 1 auto !important; min-width:0 !important; max-width:90px !important; white-space:nowrap; }
+/* Tabs can swipe horizontally without shrinking the whole page. */
+.kipk-tabs, .kipk-tab-nav, .tab-row, .tabs-row, .horizontal-tabs { max-width:100% !important; min-width:0 !important; overflow-x:auto !important; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+.kipk-page { width:100% !important; max-width:100% !important; padding-left:0 !important; padding-right:0 !important; overflow-x:hidden !important; }
+.kipk-summary, .kipk-jago-summary, .kipk-mini-grid, .kipk-bank-grid, .kipk-form, .kipk-month-summary, .kipk-summary-actions { width:100% !important; min-width:0 !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+.kipk-stat, .kipk-mini-card, .kipk-bank-card, .kipk-fund-card, .card, .panel, .stat { min-width:0 !important; max-width:100% !important; overflow-wrap:anywhere; }
+img, video, canvas, iframe { max-width:100%; }
+pre, code { max-width:100%; overflow-x:auto; }
+.table-wrap, .task-table-wrap, .task-calendar-wrap, .att-calendar-scroll { max-width:100%; overflow-x:auto !important; -webkit-overflow-scrolling:touch; }
+.task-table { min-width:780px; }
+.calendar-grid { min-width:640px; }
+.att-calendar-grid { min-width:640px; }
+.mobile-bottom-nav { width:100% !important; max-width:100% !important; }
+@media (max-width:480px) {
+  main { padding:16px 12px calc(88px + env(safe-area-inset-bottom,0px)) !important; }
+  .topbar { gap:6px !important; }
+  .brand { font-size:16px !important; }
+  .search-wrap input { padding:9px 10px !important; font-size:12px !important; }
+  .profile-top-badge { padding:5px 6px !important; font-size:10px !important; }
+  .kipk-summary, .kipk-jago-summary { gap:8px !important; }
+  .kipk-stat { padding:12px !important; }
+  .kipk-stat strong { font-size:16px !important; overflow-wrap:anywhere; }
+  .kipk-bank-card { min-height:140px !important; padding:12px !important; }
+}
+</style>
 </body></html>

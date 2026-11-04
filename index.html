@@ -512,6 +512,14 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
 </style>
 
 <style id="learnhub-daily-activity-style">.activity-page{max-width:1050px;margin:0 auto}.activity-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.activity-weekday{text-align:center;font-size:11px;font-weight:800;color:var(--muted);padding:7px 0}.activity-date{min-height:78px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:7px;text-align:left;cursor:pointer;overflow:hidden}.activity-date.selected{outline:2px solid var(--accent);background:var(--accent2)}.activity-date.today{border-color:var(--accent)}.activity-date .num{font-weight:800;font-size:13px}.activity-date .dot{display:block;font-size:10px;color:var(--accent);margin-top:5px;overflow-wrap:anywhere;line-height:1.3}.activity-date.empty{visibility:hidden}.activity-list{display:grid;gap:8px}.activity-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.activity-item strong{display:block}.activity-item small{display:block;color:var(--muted);margin-top:3px}.activity-item p{margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.activity-actions{display:flex;gap:5px;flex-shrink:0}.activity-actions button{padding:6px 8px;font-size:11px}@media(max-width:520px){.activity-calendar{gap:3px}.activity-date{min-height:58px;padding:4px;border-radius:7px}.activity-date .num{font-size:12px}.activity-date .dot{font-size:9px;max-height:25px;overflow:hidden}.activity-weekday{font-size:10px}.activity-item{flex-direction:column}.activity-actions{align-self:flex-end}}</style>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#1768D2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LearnHub">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 </head>
 <body class="lh-locked">
 <div id="lhLoginGate" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#101827,#243b53);font-family:inherit;color:#172033">
@@ -535,7 +543,7 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
   <button class="icon-btn" id="menuBtn" aria-label="Buka menu">☰</button>
   <a class="brand" href="#/">Learn<span>Hub</span></a>
   <div class="search-wrap"><input id="search" placeholder="Cari mata kuliah, materi, atau kata kunci..." autocomplete="off"><div id="searchResults" class="search-results"></div></div>
-  <button class="icon-btn" id="themeBtn" title="Dark mode">◐</button>
+  <button class="icon-btn" id="installAppBtn" type="button" title="Instal LearnHub" aria-label="Instal LearnHub" style="display:none;font-size:18px">⬇</button>\n  <button class="icon-btn" id="themeBtn" title="Dark mode">◐</button>
 </header>
 <div class="profile-top" id="profileTop">
   <div class="profile-top-inner">
@@ -2406,4 +2414,51 @@ pre, code { max-width:100%; overflow-x:auto; }
 .modal-overlay{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(15,23,42,.58);backdrop-filter:blur(3px)}
 .kipk-bank-detail-modal{width:min(680px,96vw);max-height:90vh;overflow:auto;padding:18px}.kipk-account-balance{padding:20px;border-radius:17px;background:linear-gradient(135deg,#eef4ff,#f8fbff);border:1px solid #dce7f8;margin:12px 0 15px;color:#172b4d}.kipk-account-balance small{display:block;color:#63738d;font-weight:700}.kipk-account-balance>strong{display:block;font-size:clamp(27px,7vw,38px);line-height:1.2;margin:5px 0 12px;overflow-wrap:anywhere}.kipk-account-stats{display:grid;gap:5px;font-size:12px;color:#52627b}.kipk-bank-opening,.kipk-bank-transaction{padding:14px;border:1px solid var(--line);border-radius:14px;margin:12px 0;background:var(--bg)}.kipk-bank-form-title{grid-column:1/-1;font-weight:850;font-size:15px}.kipk-bank-history{margin-top:14px}.kipk-bank-disclaimer{line-height:1.55;margin:12px 2px}.kipk-bank-detail-modal .kipk-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.kipk-bank-detail-modal .kipk-form label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:750}.kipk-bank-detail-modal .kipk-form label.wide,.kipk-bank-detail-modal .kipk-form .wide{grid-column:1/-1}.kipk-bank-detail-modal .kipk-form input,.kipk-bank-detail-modal .kipk-form textarea,.kipk-bank-detail-modal .kipk-form select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel);color:var(--text);font:inherit}.kipk-bank-detail-modal .kipk-form textarea{resize:vertical}.kipk-bank-detail-modal .kipk-entry{gap:8px}.kipk-bank-detail-modal .kipk-entry-amount{white-space:nowrap}@media(max-width:520px){.kipk-bank-detail-modal{padding:13px}.kipk-bank-detail-modal .kipk-form{grid-template-columns:1fr}.kipk-bank-detail-modal .kipk-form label.wide,.kipk-bank-detail-modal .kipk-form .wide,.kipk-bank-form-title{grid-column:auto}.kipk-account-balance{padding:16px}}
 </style>
+
+<script>
+/* LearnHub PWA: install prompt + offline app shell */
+(() => {
+  let deferredInstallPrompt = null;
+  const installButton = document.getElementById('installAppBtn');
+  const isStandalone = () =>
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(error =>
+        console.warn('LearnHub: service worker gagal didaftarkan', error)
+      );
+    });
+  }
+
+  if (!installButton) return;
+  if (isStandalone()) {
+    installButton.style.display = 'none';
+    return;
+  }
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installButton.style.display = 'inline-grid';
+  });
+
+  installButton.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) {
+      alert('Jika tombol instal belum tersedia, buka menu browser (⋮), lalu pilih “Tambahkan ke layar utama” atau “Instal aplikasi”.');
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installButton.style.display = 'none';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installButton.style.display = 'none';
+    deferredInstallPrompt = null;
+  });
+})();
+</script>
 </body></html>

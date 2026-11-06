@@ -1,4 +1,4 @@
-const CACHE_NAME = 'learnhub-shell-v2';
+const CACHE_NAME = 'learnhub-shell-v1';
 const APP_SHELL = [
   './',
   './index.html',

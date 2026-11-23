@@ -312,6 +312,60 @@ input[type="file"]{max-width:100%;font-size:13px;color:var(--muted)}
 .sidebar-empty{display:block;padding:5px 12px 9px}
 @media(max-width:760px){main{padding:18px 14px}.hero{margin-bottom:18px;gap:12px}.hero h1{font-size:clamp(26px,7vw,36px)}.sidebar-accordion-toggle{padding:11px 12px}}
 
+
+/* ===== LearnHub layout refinements ===== */
+.home-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.course-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.course-progress-grid .dash-item{min-width:0;padding:12px}
+.course-progress-grid .progress-row{align-items:flex-start;overflow-wrap:anywhere}
+.course-progress-grid .dash-item small{display:block;line-height:1.5;margin-top:6px}
+.course-progress-grid .dash-item .btn{padding:8px 10px;font-size:12px}
+.gallery-rooms{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.gallery-room-art{height:78px;font-size:30px}
+.gallery-room-info{padding:12px}
+.gallery-room-info h3{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.gallery-room-info p{font-size:12px;margin:5px 0 0}
+.attendance-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;overflow:visible}
+.attendance-stat{min-width:0;white-space:normal;padding:11px;flex-wrap:wrap;align-items:baseline}
+.attendance-stat .meta:last-child{width:100%;font-size:11px;overflow:visible;text-overflow:clip;white-space:normal}
+.attendance-stat strong{font-size:22px}
+.zoom-mini{display:flex;align-items:center;gap:3px;flex:0 0 auto}
+.zoom-mini button{width:29px;height:29px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font-weight:800;cursor:pointer}
+.zoom-mini output{font-size:11px;color:var(--muted);min-width:34px;text-align:center}
+.calendar-table{min-width:0;width:100%;table-layout:fixed}
+.calendar-table th,.calendar-table td{padding:8px;font-size:12px;overflow-wrap:anywhere}
+.calendar-topic,.calendar-note,.calendar-materials{font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.calendar-actions{display:flex;gap:5px;flex-wrap:wrap}
+.calendar-actions .btn{padding:6px 8px;font-size:11px}
+@media(max-width:800px){
+ .course-progress-grid,.gallery-rooms{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .attendance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .calendar-table-wrap{overflow:visible}
+ .calendar-table,.calendar-table tbody,.calendar-table tr,.calendar-table td{display:block;width:100%}
+ .calendar-table thead{display:none}
+ .calendar-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:9px;border-bottom:1px solid var(--line)}
+ .calendar-table td{border:0;padding:6px 7px;background:var(--bg);border-radius:9px;min-width:0}
+ .calendar-table td:first-child,.calendar-table td:nth-child(4),.calendar-table td:nth-child(5),.calendar-table td:nth-child(6),.calendar-table td:nth-child(7){grid-column:1/-1}
+ .calendar-table td::before{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:3px}
+ .calendar-table td:nth-child(1)::before{content:"Pertemuan"}
+ .calendar-table td:nth-child(2)::before{content:"Mode"}
+ .calendar-table td:nth-child(3)::before{content:"Tanggal"}
+ .calendar-table td:nth-child(4)::before{content:"Topik / Materi"}
+ .calendar-table td:nth-child(5)::before{content:"Bahan Materi"}
+ .calendar-table td:nth-child(6)::before{content:"Catatan"}
+ .calendar-table td:nth-child(7)::before{content:"Aksi"}
+ .calendar-table tr:last-child td{border:0}
+ .calendar-course-body{padding:0 9px 10px}
+ .calendar-course-header{align-items:flex-start;flex-wrap:wrap}
+ .calendar-meeting{font-size:13px}
+}
+@media(max-width:420px){
+ .course-progress-grid .dash-item{padding:10px}
+ .course-progress-grid .progress-row{font-size:12px}
+ .gallery-room-info h3{font-size:14px}
+}
+
 </style>
 
 <style id="v39-profile-header-fix">
@@ -543,7 +597,7 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
   <button class="icon-btn" id="menuBtn" aria-label="Buka menu">☰</button>
   <a class="brand" href="#/">Learn<span>Hub</span></a>
   <div class="search-wrap"><input id="search" placeholder="Cari mata kuliah, materi, atau kata kunci..." autocomplete="off"><div id="searchResults" class="search-results"></div></div>
-  <button class="icon-btn" id="installAppBtn" type="button" title="Instal LearnHub" aria-label="Instal LearnHub" style="display:none;font-size:18px">⬇</button>\n  <button class="icon-btn" id="themeBtn" title="Dark mode">◐</button>
+  <button class="icon-btn" id="installAppBtn" type="button" title="Instal LearnHub" aria-label="Instal LearnHub" style="display:none;font-size:18px">⬇</button>\n  <div class="zoom-mini" aria-label="Kontrol ukuran tampilan"><button type="button" onclick="changeLearnHubZoom(-10)" aria-label="Perkecil">−</button><output id="learnHubZoomValue">100%</output><button type="button" onclick="changeLearnHubZoom(10)" aria-label="Perbesar">+</button></div><button class="icon-btn" id="themeBtn" title="Dark mode">◐</button>
 </header>
 <div class="profile-top" id="profileTop">
   <div class="profile-top-inner">
@@ -552,7 +606,7 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
       <div class="profile-top-name" id="profileTopName">Mahasiswa LearnHub</div>
       <div class="profile-top-meta" id="profileTopMeta">Teknologi Rekayasa Multimedia · NIM belum diisi</div>
     </div>
-    <div class="quiz-points-header" id="quizPointsHeader" title="Total poin kuis yang sudah kamu kumpulkan">🏆 <strong id="quizPointsHeaderValue">0 poin</strong></div><div class="quiz-streak-header" id="quizStreakHeader" title="Streak jawaban benar saat ini">🔥 <strong id="quizStreakHeaderValue">0 streak</strong></div>
+    
 
   </div>
 </div>
@@ -704,8 +758,9 @@ function renderHome(){
  ${renderTodayAttendance()}
  ${renderTodayCalendar()}
  ${nextHtml}
- <div class="stats"><div class="stat"><span class="meta">Mata kuliah aktif</span><strong>${total}</strong><span class="meta">Semester 1</span></div><div class="stat"><span class="meta">Materi dipelajari</span><strong>${allM}/${real}</strong><span class="meta">ditandai selesai</span></div><div class="stat"><span class="meta">Latihan selesai</span><strong>${allQ+allU}</strong><span class="meta">kuis + UTS</span></div></div>
- <div class="section"><h2>🎯 Mulai dari sini</h2><div class="grid"><div class="card click" onclick="go('#/dashboard')"><span class="badge">Progress</span><h3>Lihat Dashboard</h3><p>Nilai, percobaan, materi selesai, dan kuis yang masih bisa dilanjutkan.</p></div><div class="card click" onclick="go('#/semester/1')"><span class="badge">Semester 1</span><h3>Daftar Mata Kuliah</h3><p>Pilih mata kuliah dan lanjutkan belajar dari materi terakhir.</p></div><div class="card click" onclick="go('#/tasks')"><span class="badge">Produktivitas</span><h3>Cek Tugas</h3><p>Lihat deadline terdekat supaya nggak ada tugas yang kelewat.</p></div><div class="card click" onclick="go('#/html-quizzes')"><span class="badge">Kuis pribadi</span><h3>Buat Soal</h3><p>Upload file kuis HTML dan tautkan langsung ke mata kuliah.</p></div></div></div>
+ ${renderDeadlineCenter()}
+ 
+ <div class="section"><h2>🎯 Mulai dari sini</h2><div class="grid home-shortcuts"><div class="card click" onclick="go('#/dashboard')"><span class="badge">Progress</span><h3>Lihat Dashboard</h3><p>Nilai, percobaan, materi selesai, dan kuis yang masih bisa dilanjutkan.</p></div><div class="card click" onclick="go('#/semester/1')"><span class="badge">Semester 1</span><h3>Daftar Mata Kuliah</h3><p>Pilih mata kuliah dan lanjutkan belajar dari materi terakhir.</p></div><div class="card click" onclick="go('#/tasks')"><span class="badge">Produktivitas</span><h3>Cek Tugas</h3><p>Lihat deadline terdekat supaya nggak ada tugas yang kelewat.</p></div><div class="card click" onclick="go('#/html-quizzes')"><span class="badge">Kuis pribadi</span><h3>Buat Soal</h3><p>Upload file kuis HTML dan tautkan langsung ke mata kuliah.</p></div></div></div>
  <div class="section"><h2>Semester</h2><div class="grid">${D.semesters.map(s=>`<div class="card click" onclick="go('#/semester/${s}')"><span class="badge">Semester ${s}</span><h3>Semester ${s}</h3><p>${D.courses.filter(c=>c.semester===s).length} mata kuliah terdaftar</p></div>`).join("")}</div></div>`;
 }
 
@@ -876,6 +931,8 @@ function renderAttendance(){
 const CLASS_CAL_STORE="learnhub_class_calendar_v1";
 function loadClassCalendar(){try{const x=JSON.parse(localStorage.getItem(CLASS_CAL_STORE)||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 let CLASS_CAL=loadClassCalendar();
+// Prevent the deleted default English meeting 0 from reappearing in stored data.
+CLASS_CAL=CLASS_CAL.filter(x=>!(x.courseId==="bahasa-inggris"&&Number(x.meeting)===0));saveClassCalendar();
 const DEFAULT_CLASS_CAL=[
  {id:"cal-pancasila-01",meeting:1,mode:"Offline",date:"2026-09-01",courseId:"pancasila",topic:"Introduction & Bahas Kontrak Kuliah",notes:"",docIds:[],materials:[]},
  {id:"cal-pancasila-02",meeting:2,mode:"Offline",date:"2026-09-08",courseId:"pancasila",topic:"Pengantar Pendidikan Pancasila",notes:"",docIds:[],materials:[]},
@@ -901,7 +958,7 @@ const DEFAULT_CLASS_CAL=[
  {id:"cal-dmdg-06",meeting:6,mode:"Belum ditentukan",date:"",courseId:"dasar-media-digital-grafis",topic:"",notes:"",docIds:[],materials:[]},
  {id:"cal-dmdg-07",meeting:7,mode:"Belum ditentukan",date:"",courseId:"dasar-media-digital-grafis",topic:"",notes:"",docIds:[],materials:[]},
  {id:"cal-dmdg-08",meeting:8,mode:"Belum ditentukan",date:"",courseId:"dasar-media-digital-grafis",topic:"UTS",notes:"",docIds:[],materials:[]},
- {id:"cal-inggris-00",meeting:0,mode:"Tidak Kelas",date:"2026-09-01",courseId:"bahasa-inggris",topic:"Tidak ada materi",notes:"",docIds:[],materials:[]},
+
  {id:"cal-inggris-01",meeting:1,mode:"Online",date:"2026-09-08",courseId:"bahasa-inggris",topic:"Introduction & Bahas Kontrak Kuliah",notes:"",docIds:[],materials:[]},
  {id:"cal-inggris-02",meeting:2,mode:"Offline",date:"2026-09-16",courseId:"bahasa-inggris",topic:"Descriptive Text",notes:"",docIds:[],materials:[]},
  {id:"cal-inggris-03",meeting:3,mode:"Online",date:"2026-09-23",courseId:"bahasa-inggris",topic:"WH-Question & Tenses",notes:"",docIds:[],materials:[]},
@@ -994,8 +1051,7 @@ function renderDashboard(){
  recent.sort((a,b)=>b.time-a.time);
  app.innerHTML=`<a class=back href="#/">← Home</a><div class=hero><div><div class=eyebrow>Dashboard Belajar</div><h1>Progress kamu</h1></div><div class="quick-links"><a class="btn ghost" href="#/tasks">📋 Tugas</a><a class="btn ghost" href="#/schedule">🗓️ Jadwal</a><a class="btn ghost" href="#/notes">✏️ Catatan</a><button class="btn ghost" onclick="resetProgress()">Reset progress</button></div></div>
  <div class="dashboard-grid"><div class="progress-card"><span class=meta>Progress rata-rata</span><h2 style="margin:5px 0">${progress}%</h2><div class=progress-bar><i style="width:${progress}%"></i></div></div><div class="progress-card"><span class=meta>Materi selesai</span><h2 style="margin:5px 0">${studied}/${totalM}</h2><small class=muted>Ditandai sudah dipelajari</small></div><div class="progress-card"><span class=meta>Kuis selesai</span><h2 style="margin:5px 0">${completedQ}</h2><small class=muted>Riwayat nilai tersimpan</small></div><div class="progress-card"><span class=meta>UTS selesai</span><h2 style="margin:5px 0">${completedU}</h2><small class=muted>Nilai terakhir tersimpan</small></div></div>
- ${renderDeadlineCenter()}
- <div class="section"><h2>Progress per mata kuliah</h2><div class="dash-list">${courses.map(c=>{const st=courseStats(c);const u=quizRecord('uts',c.id);return `<div class="dash-item"><div class="progress-row"><b>${esc(c.name)}</b><b>${st.progress}%</b></div><div class=progress-bar><i style="width:${st.progress}%"></i></div><small>Materi ${st.studied}/${st.ms.length} · Kuis ${st.quizzes}/${st.ms.length} · UTS ${st.uts?'selesai':'belum dikerjakan'}${u?.completed?` · Nilai UTS <span class=mini-score>${u.score}/${u.total} (${u.percent}%)</span>`:''}</small><div style="margin-top:9px"><a class="btn ghost" href="#/course/${c.id}">Buka mata kuliah →</a></div></div>`}).join("")}</div></div>
+ <div class="section"><h2>Progress per mata kuliah</h2><div class="dash-list course-progress-grid">${courses.map(c=>{const st=courseStats(c);const u=quizRecord('uts',c.id);return `<div class="dash-item"><div class="progress-row"><b>${esc(c.name)}</b><b>${st.progress}%</b></div><div class=progress-bar><i style="width:${st.progress}%"></i></div><small>Materi ${st.studied}/${st.ms.length} · Kuis ${st.quizzes}/${st.ms.length} · UTS ${st.uts?'selesai':'belum dikerjakan'}${u?.completed?` · Nilai UTS <span class=mini-score>${u.score}/${u.total} (${u.percent}%)</span>`:''}</small><div style="margin-top:9px"><a class="btn ghost" href="#/course/${c.id}">Buka mata kuliah →</a></div></div>`}).join("")}</div></div>
  <div class="section"><h2>Riwayat latihan</h2>${recent.length?`<div class="dash-list">${recent.slice(0,10).map(r=>`<div class=dash-item><b>${esc(r.type)} — ${esc(r.title)}</b><br><small>${r.score}/${r.total} benar · <span class=mini-score>${Math.round(r.score/r.total*100)}%</span> · ${new Date(r.time).toLocaleString('id-ID')}</small></div>`).join("")}</div>`:`<div class=empty>Belum ada riwayat. Kerjakan kuis pertama kamu yuk.</div>`}</div>`;
 }
 function renderSemester(s){const cs=D.courses.filter(c=>c.semester===s);app.innerHTML=`<a class=back href="#/">← Home</a><div class=hero><div><div class=eyebrow>Semester ${s}</div><h1>Semester ${s}</h1><p>Pilih mata kuliah untuk membuka materi dan latihan.</p></div></div>${cs.length?semesterCards(s):'<div class=empty>Belum ada mata kuliah yang ditambahkan untuk semester ini.</div>'}`}
@@ -2284,6 +2340,12 @@ window.deleteGalleryRecord=async id=>{if(!confirm('Hapus dokumentasi tugas ini d
 const _galleryRenderOriginal=renderGallery;
 renderGallery=function(){_galleryRenderOriginal();document.querySelectorAll('[data-gallery-thumb]').forEach(async img=>{try{const f=await galleryGetFile(img.dataset.galleryThumb);if(f&&f.blob.type.startsWith('image/')){const u=URL.createObjectURL(f.blob);img.src=u;img.addEventListener('load',()=>URL.revokeObjectURL(u),{once:true})}}catch(e){}})};
 
+
+const LEARNHUB_ZOOM_STORE='learnhub_zoom_v1';
+function getLearnHubZoom(){let v=Number(localStorage.getItem(LEARNHUB_ZOOM_STORE)||100);return Math.min(120,Math.max(80,v))}
+function applyLearnHubZoom(){const z=getLearnHubZoom();document.body.style.zoom=z+'%';const out=document.getElementById('learnHubZoomValue');if(out)out.textContent=z+'%'}
+function changeLearnHubZoom(delta){const z=Math.min(120,Math.max(80,getLearnHubZoom()+delta));localStorage.setItem(LEARNHUB_ZOOM_STORE,String(z));applyLearnHubZoom()}
+
 function route(){const raw=location.hash.slice(1)||'/';const p=raw.split('?')[0]||'/';sidebar.classList.remove('open');document.querySelectorAll('.sidebar-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')===('#'+p)));document.querySelectorAll('#mobileBottomNav a').forEach(a=>{const key=a.dataset.nav;const active=(key==='home'&&p==='/')||(key==='materials'&&(p==='/lecturer-docs'||p==='/materials-tasks'||p.startsWith('/material/')))||(key==='quizzes'&&(p==='/quizzes'||p==='/html-quizzes'||p.startsWith('/quizzes/')||p.startsWith('/quiz/')||p.startsWith('/uts/')))||(key==='dashboard'&&(p==='/dashboard'||p==='/attendance'||p==='/schedule'||p==='/calendar'||p==='/tasks'||p==='/notes'||p.startsWith('/course/')||p.startsWith('/semester/')))||(key==='gallery'&&p==='/gallery')||(key==='favorites'&&p==='/favorites');a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});if(p==='/')return renderHome();if(p==='/dashboard')return renderDashboard();if(p==='/kipk')return renderKIPK();if(p==='/profile')return renderProfile();if(p==='/materials-tasks')return renderMaterialsTasks();if(p==='/tasks')return renderTasks();if(p==='/gallery')return renderGallery();if(p==='/schedule')return renderSchedule();if(p==='/daily-activity')return renderDailyActivity();if(p==='/attendance')return renderAttendance();if(p==='/calendar')return renderCalendar();if(p==='/notes')return renderNotes();let ncm=p.match(/^\/note-course\/([^/]+)$/);if(ncm)return renderNoteCourseDetail(ncm[1]);let nm=p.match(/^\/note\/([^/]+)$/);if(nm)return renderNoteDetail(nm[1]);if(p==='/lecturer-docs')return renderLecturerDocs();let qroom=p.match(/^\/quizzes\/([^/]+)$/);if(qroom)return renderQuizCourseRoom(qroom[1]);if(p==='/quizzes')return renderQuizHub();if(p==='/html-quizzes')return renderHTMLQuizHub();if(p==='/favorites')return renderHTMLQuizFavorites();if(p==='/rewards')return renderRewardShop();if(p==='/results/quizzes')return renderQuizResults();let qr=p.match(/^\/quiz-review\/([^/]+)$/);if(qr)return renderQuizReview(qr[1]);if(p==='/results/uts')return renderUTSResults();let ur=p.match(/^\/uts-review\/([^/]+)$/);if(ur)return renderUTSReview(ur[1]);let m=p.match(/^\/semester\/(\d+)$/);if(m)return renderSemester(+m[1]);m=p.match(/^\/course\/([^/]+)$/);if(m)return renderCourse(m[1]);m=p.match(/^\/material\/([^/]+)$/);if(m)return renderMaterial(m[1]);m=p.match(/^\/lecturer\/([^/]+)$/);if(m)return renderLecturerMode(m[1]);let ql=p.match(/^\/quiz\/([^/]+)\/level\/(\d+)$/);if(ql)return quizPage('material',ql[1],+ql[2]);m=p.match(/^\/quiz\/([^/]+)$/);if(m)return quizPage('material',m[1]);m=p.match(/^\/uts\/([^/]+)$/);if(m)return quizPage('uts',m[1]);render404()}
 renderProfileHeader();
 renderSidebar();
@@ -2292,7 +2354,7 @@ $("#themeBtn").onclick=()=>{document.body.classList.toggle('dark');localStorage.
 if(localStorage.getItem('dark')==='true')document.body.classList.add('dark');
 $("#search").addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),box=$("#searchResults");if(!q){box.classList.remove('show');return}const results=[...D.courses.filter(c=>(c.name+' '+c.code+' '+c.description).toLowerCase().includes(q)).map(c=>({label:c.name,sub:`Semester ${c.semester} · Mata Kuliah`,href:`#/course/${c.id}`})),...D.materials.filter(m=>(m.title+' '+m.summary+' '+m.keyPoints.join(' ')+' '+m.terms.flat().join(' ')).toLowerCase().includes(q)).map(m=>({label:m.title,sub:`Materi · ${D.courses.find(c=>c.id===m.courseId)?.name||'Mata Kuliah'}`,href:`#/material/${m.id}`}))].slice(0,8);box.innerHTML=results.length?results.map(r=>`<div class=search-item onclick="go('${r.href}')"><b>${esc(r.label)}</b><br><small>${esc(r.sub)}</small></div>`).join(''):`<div class=search-item>Tidak ditemukan.</div>`;box.classList.add('show')});
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))$("#searchResults").classList.remove('show')});
-window.addEventListener('hashchange',route);route();
+window.addEventListener('hashchange',route);applyLearnHubZoom();route();
 </script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>

@@ -615,7 +615,7 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
 </div>
 <div class="app-shell">
 <aside id="mainSidebar">
-  <div class="side-title">Semester</div>
+  <div class="side-title">Menu</div>
   <nav id="semesterNav"></nav>
   <div class="side-foot">Teknologi Rekayasa Multimedia<br><small>Personal Learning Hub</small></div>
 </aside>
@@ -2466,11 +2466,11 @@ function renderSidebar(){
  const dashboardLinks=[
   ['#/kipk','Dana KIP-K'],['#/materials-tasks','Bahan & Tugas'],['#/tasks','Daftar Tugas'],['#/gallery','Galeri Karya'],['#/schedule','Jadwal Kuliah'],['#/daily-activity','Daily Activity'],['#/attendance','Kehadiran'],['#/calendar','Kalender Kuliah'],['#/notes','Catatan Saya']
  ];
- nav.innerHTML=`<div class="sidebar-profile"><a class="sidebar-link" href="#/profile"><b>${esc(PROFILE.name||'Profil Saya')}</b></a></div>
- <div class="sidebar-profile"><a class="sidebar-link" href="#/settings"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:8px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Pengaturan</a></div>
+ nav.innerHTML=`<div class="sidebar-profile"><a class="sidebar-link sidebar-profile-link" href="#/profile"><span class="sp-title">Profile</span><span class="sp-name">${esc(PROFILE.name||'Profil Saya')}</span></a></div>
  <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('dashboard-submenu',this)" aria-expanded="false"><span>Dashboard</span><span class="sidebar-chevron">⌄</span></button><div id="dashboard-submenu" class="sidebar-submenu">${dashboardLinks.map(([href,label])=>`<a class="sidebar-link" href="${href}">${label}</a>`).join('')}</div></div>
  <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('learning-submenu',this)" aria-expanded="false"><span>Ruang Belajar</span><span class="sidebar-chevron">⌄</span></button><div id="learning-submenu" class="sidebar-submenu"><a class="sidebar-link" href="#/lecturer-docs">Materi Dosen</a><a class="sidebar-link" href="#/quizzes">Kuis</a><a class="sidebar-link" href="#/html-quizzes">Buat Soal</a><a class="sidebar-link" href="#/favorites">Favorit</a></div></div>
- <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('semester-submenu',this)" aria-expanded="false"><span>Semester</span><span class="sidebar-chevron">⌄</span></button><div id="semester-submenu" class="sidebar-submenu">${D.semesters.map(s=>{const cs=D.courses.filter(c=>c.semester===s);return `<div class="sidebar-semester"><button class="sidebar-semester-toggle" onclick="toggleSemester(${s})" aria-expanded="false"><span>Semester ${s}</span><span class="sidebar-chevron">⌄</span></button><div id="side-sem-${s}" class="sidebar-course">${cs.map(c=>`<a class="sidebar-link" href="#/course/${c.id}">${esc(c.name)}</a>`).join('')||'<span class="meta sidebar-empty">Belum ada mata kuliah</span>'}</div></div>`}).join('')}</div></div>`;
+ <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('semester-submenu',this)" aria-expanded="false"><span>Semester</span><span class="sidebar-chevron">⌄</span></button><div id="semester-submenu" class="sidebar-submenu">${D.semesters.map(s=>{const cs=D.courses.filter(c=>c.semester===s);return `<div class="sidebar-semester"><button class="sidebar-semester-toggle" onclick="toggleSemester(${s})" aria-expanded="false"><span>Semester ${s}</span><span class="sidebar-chevron">⌄</span></button><div id="side-sem-${s}" class="sidebar-course">${cs.map(c=>`<a class="sidebar-link" href="#/course/${c.id}">${esc(c.name)}</a>`).join('')||'<span class="meta sidebar-empty">Belum ada mata kuliah</span>'}</div></div>`}).join('')}</div></div>
+ <div class="sidebar-profile"><a class="sidebar-link" href="#/settings"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:8px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Pengaturan</a></div>`;
 }
 window.toggleSidebarGroup=(id,btn)=>{const el=document.getElementById(id);if(!el)return;const open=el.classList.toggle('open');btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open))};
 window.toggleSemester=s=>{const el=document.getElementById('side-sem-'+s);if(el){const open=el.classList.toggle('open');const btn=el.previousElementSibling;if(btn){btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open))}}};
@@ -3346,5 +3346,34 @@ html.lh-mobile .mobile-bottom-nav{left:max(12px,calc(50% - 203px))!important;rig
 html.lh-mobile aside#mainSidebar.open{left:max(0px,calc(50% - 215px))!important}
 html.lh-mobile #lhCloudOpen{right:max(14px,calc(50% - 201px))!important}
 
+
+/* ===== Revisi 4: sidebar & bottom nav mobile ===== */
+:root{--lh-topbar-h:64px}
+/* settings sekarang di bawah Semester: jarak sama dengan accordion */
+aside#mainSidebar .sidebar-profile{padding:0!important;margin:0 0 8px!important;border-bottom:1px solid rgba(255,255,255,.16)!important}
+aside#mainSidebar .sidebar-profile .sidebar-link{display:flex!important;align-items:center;gap:10px;min-height:46px;margin:0;padding:0 13px!important;border-radius:14px;line-height:1.2;font-weight:750;font-size:calc(14px*var(--ts,1))}
+aside#mainSidebar .sidebar-profile .sidebar-link svg{flex:0 0 16px;width:16px;height:16px;margin:0!important;vertical-align:middle!important}
+aside#mainSidebar .sidebar-profile .sidebar-link b{display:block;font-weight:750;line-height:1.2;color:#fff}
+/* aktif = pill putih -> teks wajib gelap (sebelumnya putih di atas putih) */
+aside#mainSidebar .sidebar-profile .sidebar-link.active,aside#mainSidebar .sidebar-profile .sidebar-link.active b,aside#mainSidebar .sidebar-profile .sidebar-link.active svg{color:#0a4f4a!important}
+aside#mainSidebar .sidebar-accordion-toggle{min-height:46px;padding-top:0;padding-bottom:0}
+@media(max-width:800px){
+  /* sidebar naik sampai tepat di bawah topbar, nutup header profil sepenuhnya */
+  aside#mainSidebar{top:var(--lh-topbar-h)!important;height:calc(100vh - var(--lh-topbar-h))!important;height:calc(100dvh - var(--lh-topbar-h))!important;padding:16px 12px calc(110px + env(safe-area-inset-bottom,0px))!important;z-index:1100!important;overflow-y:auto!important;overscroll-behavior:contain;box-sizing:border-box}
+  aside#mainSidebar .side-title{padding-top:0}
+  /* bottom nav: kolom sama lebar, label muat di dalam pill */
+  .mobile-bottom-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:2px!important;padding:6px!important}
+  .mobile-bottom-nav a{position:relative;min-width:0;min-height:52px;padding:6px 1px 5px!important;gap:3px!important;justify-content:center;overflow:hidden;font-size:calc(10px*var(--ts,1))!important;letter-spacing:-.01em;line-height:1.1!important}
+  .mobile-bottom-nav a svg{width:22px!important;height:22px!important;flex:0 0 22px}
+  .mobile-bottom-nav a span{display:block;max-width:100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip}
+  .mobile-bottom-nav a.active{font-weight:700}
+}
+
+/* Menu Profile: judul "Profile" + nama lebih tipis & kecil di bawahnya */
+aside#mainSidebar .sidebar-profile .sidebar-profile-link{flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:56px;padding:0 13px!important}
+aside#mainSidebar .sp-title{display:block;font-weight:750;font-size:calc(14px*var(--ts,1));line-height:1.2;color:#fff}
+aside#mainSidebar .sp-name{display:block;max-width:100%;font-weight:400;font-size:calc(12px*var(--ts,1));line-height:1.25;color:rgba(255,255,255,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+aside#mainSidebar .sidebar-profile .sidebar-link.active .sp-title{color:#0a4f4a!important}
+aside#mainSidebar .sidebar-profile .sidebar-link.active .sp-name{color:#3d6b67!important}
 </style>
 </body></html>

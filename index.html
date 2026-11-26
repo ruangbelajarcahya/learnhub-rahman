@@ -2491,6 +2491,7 @@ function galleryEscape(s){return typeof esc==='function'?esc(String(s??'')):Stri
 function galleryTaskDocs(){const meta=galleryMeta();return meta.map(m=>({...m,task:(TASKS||[]).find(t=>String(t.id)===String(m.taskId))})).filter(x=>x.task)}
 const GX_PALETTE=[['#1d4ed8','#60a5fa'],['#0f766e','#2dd4bf'],['#6d28d9','#a78bfa'],['#be185d','#f472b6'],['#c2410c','#fb923c'],['#15803d','#4ade80'],['#0369a1','#22d3ee'],['#a16207','#facc15'],['#b91c1c','#f87171'],['#4338ca','#818cf8'],['#047857','#a3e635'],['#9d174d','#c084fc']];
 const GX_ICONS=['<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/>','<path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>','<path d="M12 3l5 8H7z"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/>','<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>','<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M20 17v4H6.5A2.5 2.5 0 0 1 4 18.5"/>','<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>'];
+const GX_BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 function galleryHash(v){let h=0;v=String(v||'');for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return h}
 function galleryColors(name,idx){const c=GX_PALETTE[(typeof idx==='number'?idx:galleryHash(name))%GX_PALETTE.length];return `--g1:${c[0]};--g2:${c[1]}`}
 function renderGallery(){
@@ -2500,8 +2501,17 @@ function renderGallery(){
  const active=GALLERY_ROOM;const matching=docs.filter(x=>x.task.course===active);
  const head=`<a class="back" href="#/dashboard">Dashboard</a><section class="hero"><div><div class="eyebrow">Arsip visual pribadi</div><h1>Galeri Karya</h1></div>${active?`<button class="btn primary" onclick="openGalleryUpload()">Tambah dokumentasi</button>`:''}</section>`;
  if(active){
-  app.innerHTML=head+`<button type="button" class="gx-back" onclick="GALLERY_ROOM='';renderGallery()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Semua ruangan</button>
-  <div class="section"><div class="eyebrow">Ruang mata kuliah</div><h2 style="margin:3px 0 4px">${galleryEscape(active)}</h2><div class="meta" style="margin-bottom:14px">${matching.length} karya terdokumentasi</div>${matching.length?`<div class="gx-list">${matching.map(m=>galleryCard(m)).join('')}</div>`:`<div class="empty"><h3>Belum ada dokumentasi</h3><p>Tambahkan foto atau PDF dari tugas mata kuliah ini.</p><button class="btn primary" onclick="openGalleryUpload()">Tambah dokumentasi</button></div>`}</div>`;
+  const files=matching.flatMap(m=>(m.files||[]).map((f,i,arr)=>({m,f,i,n:arr.length})));
+  const cover=files.find(x=>/^image\//.test(x.f.type||''));
+  const ri=Math.max(0,roomNames.indexOf(active));
+  const tiles=files.map(({m,f,i,n})=>{
+   const t=m.task;const isImg=/^image\//.test(f.type||'');
+   const ext=galleryEscape((f.name||'FILE').split('.').pop().toUpperCase());
+   const thumb=isImg?`<img alt="" src="${GX_BLANK}" data-gallery-thumb="${galleryEscape(f.id)}">`:`<span class="gx-ext">${ext}</span>`;
+   const d=typeof taskDate==='function'?taskDate(t.submitted):galleryEscape(t.submitted||'—');
+   return `<div class="gx-item" data-mid="${galleryEscape(m.id)}" data-tid="${galleryEscape(t.id)}" data-fid="${galleryEscape(f.id)}"><button type="button" class="gx-thumb" style="${galleryColors(t.title)}" onclick="gxOpenFile(this.parentElement)" aria-label="Buka ${galleryEscape(t.title)}">${thumb}</button><button type="button" class="gx-dots" aria-label="Menu karya" onclick="gxMenu(event,this)"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button><span class="gx-cap">${galleryEscape(t.title)}${n>1?` (${i+1}/${n})`:''}</span><span class="gx-sub">${d}</span></div>`}).join('');
+  app.innerHTML=`<section class="gx-head" style="${galleryColors(active,ri)}">${cover?`<img class="gx-head-img" alt="" src="${GX_BLANK}" data-gallery-thumb="${galleryEscape(cover.f.id)}">`:''}<div class="gx-head-shade"></div><button type="button" class="gx-hback" aria-label="Kembali ke semua ruangan" onclick="GALLERY_ROOM='';renderGallery()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="gx-head-body"><div class="gx-head-eyebrow">Galeri Karya</div><h2>${galleryEscape(active)}</h2><span class="gx-chip">${matching.length} karya</span><button type="button" class="gx-hadd" onclick="openGalleryUpload()">+ Tambah dokumentasi</button></div></section>
+  <section class="gx-sheet">${files.length?`<div class="gx-grid">${tiles}</div>`:`<div class="empty"><h3>Belum ada dokumentasi</h3><p>Tambahkan foto atau PDF dari tugas mata kuliah ini.</p><button class="btn primary" onclick="openGalleryUpload()">Tambah dokumentasi</button></div>`}</section>`;
   return;
  }
  app.innerHTML=head+`<div class="section"><div style="display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap"><h2 style="margin:0">Ruangan Mata Kuliah</h2><span class="meta">${docs.length} dokumentasi tersimpan di perangkat ini</span></div><div class="gx-rooms">${roomNames.map((name,i)=>{const count=docs.filter(x=>x.task.course===name).length;return `<button type="button" class="gx-room" data-gallery-room="${galleryEscape(name)}" onclick="openGalleryRoom(this.dataset.galleryRoom)" style="${galleryColors(name,i)}"><span class="gx-room-art"><span class="gx-room-name">${galleryEscape(name)}</span><span class="gx-room-count">${count?count+' karya':'Kosong'}</span></span></button>`}).join('')}</div></div>`;
@@ -2515,7 +2525,8 @@ function galleryCard(m){
  const date=typeof taskDate==='function'?taskDate(t.submitted):galleryEscape(t.submitted||'—');
  return `<article class="gx-card" role="button" tabindex="0" data-mid="${galleryEscape(m.id)}" data-tid="${galleryEscape(t.id)}" onclick="gxOpen(this)" onkeydown="if(event.key==='Enter'){gxOpen(this)}" style="${galleryColors(t.title)}"><div class="gx-cover">${cover}<div class="gx-shade"></div></div><button type="button" class="gx-more" aria-label="Menu karya" onclick="gxMenu(event,this)"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button><div class="gx-info"><h3>${galleryEscape(t.title)}</h3><div class="gx-meta">Dikumpulkan: ${date}</div><div class="gx-meta">${fileCount} file dokumentasi</div></div></article>`}
 window.gxOpen=el=>openGalleryDetail(el.dataset.mid);
-window.gxMenu=(ev,btn)=>{ev.stopPropagation();ev.preventDefault();const card=btn.closest('.gx-card');const had=card.querySelector('.gx-pop');document.querySelectorAll('.gx-pop').forEach(x=>x.remove());if(had)return;const pop=document.createElement('div');pop.className='gx-pop';pop.innerHTML='<button type="button" data-a="view">Lihat Karya</button><button type="button" data-a="edit">Edit file</button>';pop.addEventListener('click',e=>{e.stopPropagation();const act=e.target.closest('button')?.dataset.a;pop.remove();if(act==='view')openGalleryDetail(card.dataset.mid);if(act==='edit')openGalleryUpload(card.dataset.tid,card.dataset.mid)});card.appendChild(pop);setTimeout(()=>document.addEventListener('click',()=>pop.remove(),{once:true}),0)};
+window.gxOpenFile=el=>openGalleryFile(el.dataset.mid,el.dataset.fid);
+window.gxMenu=(ev,btn)=>{ev.stopPropagation();ev.preventDefault();const card=btn.closest('.gx-card,.gx-item');const had=card.querySelector('.gx-pop');document.querySelectorAll('.gx-pop').forEach(x=>x.remove());if(had)return;const pop=document.createElement('div');pop.className='gx-pop';pop.innerHTML='<button type="button" data-a="view">Detail karya</button><button type="button" data-a="edit">Edit file</button>';pop.addEventListener('click',e=>{e.stopPropagation();const act=e.target.closest('button')?.dataset.a;pop.remove();if(act==='view')openGalleryDetail(card.dataset.mid);if(act==='edit')openGalleryUpload(card.dataset.tid,card.dataset.mid)});card.appendChild(pop);setTimeout(()=>document.addEventListener('click',()=>pop.remove(),{once:true}),0)};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.gx-pop').forEach(x=>x.remove())});
 function openGalleryUpload(taskId='',editId=''){
  const tasks=(TASKS||[]);const existing=editId?galleryMeta().find(x=>x.id===editId):null;const chosen=taskId||existing?.taskId||'';
@@ -3426,5 +3437,27 @@ aside#mainSidebar .sidebar-profile .sidebar-link.active .sp-name{color:#3d6b67!i
 .gx-pop button{display:block;width:100%;padding:11px 12px;border:0;border-radius:11px;background:transparent;color:var(--text);font:inherit;font-weight:700;font-size:calc(14px*var(--ts,1));text-align:left;cursor:pointer}
 .gx-pop button:hover{background:var(--accent2)}
 @media(max-width:600px){.gx-rooms{grid-template-columns:repeat(2,minmax(0,1fr))}.gx-list{grid-template-columns:1fr}.gx-card{height:200px}}
+
+/* ===== Galeri Karya v3: header cover + sheet grid 3 kolom ===== */
+.gx-head{position:relative;height:240px;border-radius:28px;overflow:hidden;color:#fff;background:linear-gradient(145deg,var(--g1),var(--g2));box-shadow:0 12px 28px rgba(20,30,55,.2)}
+.gx-head-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gx-head-shade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,14,32,.5),rgba(8,14,32,.62))}
+.gx-hback{position:absolute;z-index:2;top:14px;left:14px;width:42px;height:42px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;cursor:pointer;backdrop-filter:blur(4px)}
+.gx-head-body{position:absolute;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:56px 22px 46px;text-align:center}
+.gx-head-eyebrow{font-size:calc(12px*var(--ts,1));font-weight:700;letter-spacing:.04em;color:rgba(255,255,255,.8)}
+.gx-head-body h2{margin:0;color:#fff;font-size:calc(24px*var(--ts,1));line-height:1.2;font-weight:800;overflow-wrap:anywhere;text-shadow:0 1px 10px rgba(0,0,0,.35)}
+.gx-chip{display:inline-block;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.22);color:#fff;font-size:calc(12px*var(--ts,1));font-weight:700;backdrop-filter:blur(4px)}
+.gx-hadd{margin-top:4px;padding:9px 16px;border:0;border-radius:999px;background:#fff;color:#0b1f4d;font:inherit;font-weight:800;font-size:calc(13px*var(--ts,1));cursor:pointer}
+.gx-sheet{position:relative;z-index:1;margin-top:-30px;padding:20px 14px 26px;border-radius:28px;background:var(--panel);box-shadow:0 -6px 24px rgba(20,30,55,.08),var(--shadow)}
+.gx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:18px 12px}
+.gx-item{position:relative;min-width:0}
+.gx-thumb{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1/1;padding:0;border:0;border-radius:20px;overflow:hidden;background:linear-gradient(145deg,var(--g1),var(--g2));cursor:pointer;box-shadow:0 6px 16px rgba(20,30,55,.14);transition:transform .15s ease;-webkit-tap-highlight-color:transparent}
+.gx-thumb:active{transform:scale(.96)}
+.gx-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gx-dots{position:absolute;z-index:2;top:6px;right:6px;width:28px;height:28px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(10,20,45,.5);color:#fff;cursor:pointer}
+.gx-cap{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:8px;font-weight:750;font-size:calc(12px*var(--ts,1));line-height:1.3;text-align:center;color:var(--text);overflow-wrap:anywhere}
+.gx-sub{display:block;margin-top:2px;font-size:calc(10.5px*var(--ts,1));text-align:center;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gx-item .gx-pop{top:38px;right:4px;z-index:6}
+@media(max-width:600px){.gx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.gx-head{height:230px}}
 </style>
 </body></html>

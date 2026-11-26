@@ -623,14 +623,27 @@ body.dark .clean-course-card,body.dark .course-color-card{background:linear-grad
 </div>
 <button id="lhCloudOpen" class="btn primary" style="position:fixed;right:14px;bottom:82px;z-index:80;box-shadow:0 6px 20px #0002">Simpan Cloud</button>
 <div id="lhCloudModal" style="display:none;position:fixed;inset:0;z-index:200;background:#10182899;align-items:center;justify-content:center;padding:16px">
- <section style="width:min(100%,440px);background:var(--panel,#fff);color:var(--text,#172033);border:1px solid var(--line,#ddd);border-radius:18px;padding:22px;box-shadow:0 18px 60px #0003">
-  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 style="margin:0">LearnHub Cloud</h2><button id="lhCloudClose" class="icon-btn" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-  <p style="font-size:calc(13px*var(--ts,1));color:var(--muted,#68738a)">Login dengan email untuk menyimpan data LearnHub ke Firebase dan membukanya di perangkat lain. Data lokal tidak dihapus.</p>
-  <label style="display:block;margin-top:12px">Email<input id="lhCloudEmail" type="email" autocomplete="email" style="display:block;width:100%;padding:11px;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--bg,#fff);color:inherit"></label>
-  <label style="display:block;margin-top:10px">Password<input id="lhCloudPass" type="password" autocomplete="current-password" style="display:block;width:100%;padding:11px;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--bg,#fff);color:inherit"></label>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"><button id="lhCloudLogin" class="btn primary">Login</button><button id="lhCloudSignup" class="btn ghost">Buat akun</button></div>
-  <div id="lhCloudSigned" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line,#ddd)"><p id="lhCloudWho" style="margin:0 0 10px"></p><div style="display:flex;flex-wrap:wrap;gap:8px"><button id="lhCloudUpload" class="btn primary">Simpan data perangkat ini</button><button id="lhCloudRestore" class="btn ghost">Ambil data dari cloud</button><button id="lhCloudLogout" class="btn ghost">Logout</button></div></div>
-  <p id="lhCloudStatus" role="status" style="font-size:calc(13px*var(--ts,1));margin:14px 0 0;overflow-wrap:anywhere">Belum terhubung.</p>
+ <section role="dialog" aria-modal="true" aria-labelledby="lhCloudTitle" style="width:min(100%,440px);background:var(--panel,#fff);color:var(--text,#172033);border:1px solid var(--line,#ddd);border-radius:28px;padding:24px;box-shadow:0 18px 60px #0003">
+  <div class="lhc-head">
+   <span class="lhc-logo"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H7a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.6 11.5 3.8 3.8 0 0 1 17.5 19z"/></svg></span>
+   <div class="lhc-ttl"><h2 id="lhCloudTitle">LearnHub Cloud</h2><p>Sinkron lewat Firebase</p></div>
+   <button id="lhCloudClose" class="icon-btn" type="button" aria-label="Tutup"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div id="lhCloudAuth">
+   <p class="lhc-desc">Login dengan email untuk menyimpan data LearnHub ke Firebase dan membukanya di perangkat lain. Data lokal tidak dihapus.</p>
+   <label class="lhc-field">Email<input id="lhCloudEmail" type="email" autocomplete="email"></label>
+   <label class="lhc-field">Password<input id="lhCloudPass" type="password" autocomplete="current-password"></label>
+   <div class="lhc-row"><button id="lhCloudLogin" type="button" class="lhc-btn lhc-primary">Login</button><button id="lhCloudSignup" type="button" class="lhc-btn">Buat akun</button></div>
+  </div>
+  <div id="lhCloudSigned" style="display:none">
+   <div class="lhc-user"><span id="lhCloudAvatar" class="lhc-av">?</span><div class="lhc-who"><small>Login sebagai</small><b id="lhCloudWho"></b></div><span class="lhc-pill"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Aktif</span></div>
+   <div class="lhc-lbl">Data</div>
+   <div class="lhc-row"><button id="lhCloudUpload" type="button" class="lhc-btn" aria-label="Simpan data perangkat ini ke cloud"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H7a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.6 11.5 3.8 3.8 0 0 1 17.5 19z"/><path d="M12 16v-5M9.5 13.2 12 10.7l2.5 2.5"/></svg>Simpan</button><button id="lhCloudRestore" type="button" class="lhc-btn" aria-label="Ambil data dari cloud"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H7a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.6 11.5 3.8 3.8 0 0 1 17.5 19z"/><path d="M12 10v5M9.5 12.8 12 15.3l2.5-2.5"/></svg>Ambil</button></div>
+   <div class="lhc-lbl">File dan foto</div>
+   <div id="lhFileSlot"></div>
+   <button id="lhCloudLogout" type="button" class="lhc-btn lhc-out">Logout</button>
+  </div>
+  <p id="lhCloudStatus" role="status">Belum terhubung.</p>
  </section>
 </div>
 <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Navigasi utama mobile">
@@ -2522,8 +2535,7 @@ function renderSidebar(){
  <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('dashboard-submenu',this)" aria-expanded="false"><span>Dashboard</span><span class="sidebar-chevron">⌄</span></button><div id="dashboard-submenu" class="sidebar-submenu">${dashboardLinks.map(([href,label])=>`<a class="sidebar-link" href="${href}">${label}</a>`).join('')}</div></div>
  <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('learning-submenu',this)" aria-expanded="false"><span>Ruang Belajar</span><span class="sidebar-chevron">⌄</span></button><div id="learning-submenu" class="sidebar-submenu"><a class="sidebar-link" href="#/lecturer-docs">Materi Dosen</a><a class="sidebar-link" href="#/quizzes">Kuis</a><a class="sidebar-link" href="#/html-quizzes">Buat Soal</a><a class="sidebar-link" href="#/favorites">Favorit</a></div></div>
  <div class="sidebar-accordion"><button class="sidebar-accordion-toggle" onclick="toggleSidebarGroup('semester-submenu',this)" aria-expanded="false"><span>Semester</span><span class="sidebar-chevron">⌄</span></button><div id="semester-submenu" class="sidebar-submenu">${D.semesters.map(s=>{const cs=D.courses.filter(c=>c.semester===s);return `<div class="sidebar-semester"><button class="sidebar-semester-toggle" onclick="toggleSemester(${s})" aria-expanded="false"><span>Semester ${s}</span><span class="sidebar-chevron">⌄</span></button><div id="side-sem-${s}" class="sidebar-course">${cs.map(c=>`<a class="sidebar-link" href="#/course/${c.id}">${esc(c.name)}</a>`).join('')||'<span class="meta sidebar-empty">Belum ada mata kuliah</span>'}</div></div>`}).join('')}</div></div>
- <div class="sidebar-profile"><a class="sidebar-link" href="#/settings"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:8px"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Pengaturan</a></div>
- <div class="sidebar-profile"><a class="sidebar-link" href="javascript:void(0)" onclick="window.lhOpenCloud&&window.lhOpenCloud();return false"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:8px"><path d="M17.5 19H7a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.6 11.5 3.8 3.8 0 0 1 17.5 19z"/></svg>Simpan Cloud</a></div>`;
+ <div class="sidebar-bottom"><a class="sidebar-link sb-item" href="#/settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Pengaturan</span></a><a class="sidebar-link sb-item" href="javascript:void(0)" onclick="window.lhOpenCloud&&window.lhOpenCloud();return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H7a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.6 11.5 3.8 3.8 0 0 1 17.5 19z"/></svg><span>Cloud</span></a><a class="sidebar-link sb-item" href="javascript:void(0)" onclick="window.lhLogout&&window.lhLogout();return false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg><span>Logout</span></a></div>`;
 }
 window.toggleSidebarGroup=(id,btn)=>{const el=document.getElementById(id);if(!el)return;const open=el.classList.toggle('open');btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open))};
 window.toggleSemester=s=>{const el=document.getElementById('side-sem-'+s);if(el){const open=el.classList.toggle('open');const btn=el.previousElementSibling;if(btn){btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',String(open))}}};
@@ -2655,11 +2667,13 @@ window.addEventListener('hashchange',route);applyLearnHubZoom();route();
  try{if(!firebase.apps.length)firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore()}catch(e){say('Firebase belum bisa dimulai: '+e.message)}
  $('lhCloudOpen').onclick=()=>{modal.style.display='flex';if(auth?.currentUser)showUser(auth.currentUser)};window.lhOpenCloud=()=>{document.getElementById('mainSidebar')?.classList.remove('open');$('lhCloudOpen').click()};
  $('lhCloudClose').onclick=()=>modal.style.display='none'; modal.addEventListener('click',e=>{if(e.target===modal)modal.style.display='none'});
- function showUser(user){$('lhCloudSigned').style.display=user?'block':'none';$('lhCloudWho').textContent=user?'Login sebagai '+user.email:'';if(user)say('Sudah login. Pilih simpan ke cloud atau ambil data dari cloud.');else say('Belum login.');}
+ function showUser(user){$('lhCloudSigned').style.display=user?'block':'none';$('lhCloudAuth').style.display=user?'none':'block';const em=user?(user.email||''):'';$('lhCloudWho').textContent=em;const av=$('lhCloudAvatar');if(av)av.textContent=(em.charAt(0)||'?').toUpperCase();say(user?'':'Belum login.');}
  async function signIn(create){const email=$('lhCloudEmail').value.trim(),password=$('lhCloudPass').value;if(!email||!password){say('Silakan isi email dan password terlebih dahulu.');return}try{say(create?'Membuat akun…':'Login…');const r=create?await auth.createUserWithEmailAndPassword(email,password):await auth.signInWithEmailAndPassword(email,password);showUser(r.user)}catch(e){say('Gagal: '+friendly(e))}}
  function friendly(e){const m={'auth/email-already-in-use':'Email ini sudah terdaftar. Silakan coba Login.','auth/invalid-email':'Format email belum benar.','auth/weak-password':'Password minimal 6 karakter.','auth/invalid-credential':'Email atau password salah.','auth/network-request-failed':'Koneksi internet bermasalah.','permission-denied':'Akses Firestore ditolak. Aturan keamanan Firestore perlu dipasang.'};return m[e.code]||e.message||'Terjadi kesalahan.'}
  $('lhCloudLogin').onclick=()=>signIn(false);$('lhCloudSignup').onclick=()=>signIn(true);
- $('lhCloudLogout').onclick=async()=>{await auth.signOut();showUser(null)};
+ window.lhLogout=async()=>{document.getElementById('mainSidebar')?.classList.remove('open');if(!auth||!auth.currentUser){modal.style.display='flex';showUser(null);return}if(!confirm('Keluar dari akun LearnHub Cloud? Data di perangkat ini tidak dihapus.'))return;try{await auth.signOut();showUser(null);window.lhToast&&window.lhToast('Berhasil logout.')}catch(e){say('Gagal logout: '+friendly(e))}};
+ $('lhCloudLogout').onclick=window.lhLogout;
+ try{auth&&auth.onAuthStateChanged(u=>showUser(u))}catch(e){}
  function localEntries(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;const v=localStorage.getItem(k);if(v==null)continue;out[k]=v;}return out}
  async function upload(){const u=auth.currentUser;if(!u){say('Login dulu.');return}try{const data=localEntries(), entries=Object.entries(data);say('Menyimpan '+entries.length+' bagian data…');for(let i=0;i<entries.length;i+=400){const batch=db.batch();for(const [key,value] of entries.slice(i,i+400)){const id=btoa(unescape(encodeURIComponent(key))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'').slice(0,140);batch.set(db.collection('users').doc(u.uid).collection('items').doc(id),{key,value,updatedAt:firebase.firestore.FieldValue.serverTimestamp()})}await batch.commit()}say('Berhasil menyimpan data browser ke cloud. Foto dan file disimpan lewat bagian File & foto di bawah.')}catch(e){say('Belum berhasil menyimpan: '+friendly(e))}}
  async function restore(){const u=auth.currentUser;if(!u){say('Login dulu.');return}if(!confirm('Data cloud akan digabungkan ke perangkat ini. Jika ada kunci yang sama, nilai dari cloud akan menggantikan nilai lokal. Lanjut?'))return;try{say('Mengambil data dari cloud…');const snap=await db.collection('users').doc(u.uid).collection('items').get();if(snap.empty){say('Belum ada data di cloud. Tekan “Simpan data perangkat ini” di perangkat yang memiliki data terbaru.');return}let n=0;snap.forEach(doc=>{const d=doc.data();if(typeof d.key==='string'&&typeof d.value==='string'){localStorage.setItem(d.key,d.value);n++}});say('Selesai mengambil '+n+' bagian data. Muat ulang halaman untuk melihat semua perubahan.');}catch(e){say('Belum berhasil mengambil data: '+friendly(e))}}
@@ -3111,14 +3125,14 @@ body.dark .kipk-page .meta,body.dark .kipk-page small{color:var(--muted)}
   el.textContent=msg;el.className='show'+(kind==='err'?' err':'');
   clearTimeout(toastTimer);if(!sticky)toastTimer=setTimeout(()=>el.classList.remove('show'),kind==='err'?7000:3500);
  }
- const fstat=t=>{const el=document.getElementById('lhFileStatus');if(el)el.textContent=t};
+ const fstat=t=>{const el=document.getElementById('lhFileStatus');if(!el)return;let m=String(t).trim().match(/^(\d+) file di perangkat ini\. Semua sudah ada di cloud\.$/);if(m)t=m[1]+' file, semua sudah di cloud';el.textContent=t;const ck=document.getElementById('lhFileCheck');if(ck)ck.style.display=/semua sudah di cloud|^Selesai\./i.test(t)?'':'none'};
  function injectUI(){
   const signed=document.getElementById('lhCloudSigned');
   if(!signed||document.getElementById('lhFileBox'))return;
   const box=document.createElement('div');
-  box.id='lhFileBox';box.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid var(--line,#ddd)';
-  box.innerHTML='<div style="font-weight:700;margin-bottom:8px">File &amp; foto</div><div style="display:flex;flex-wrap:wrap;gap:8px"><button id="lhFileUp" class="btn primary" type="button">Simpan semua file</button><button id="lhFileDown" class="btn ghost" type="button">Ambil semua file</button></div><p id="lhFileStatus" style="font-size:calc(13px*var(--ts,1));margin:10px 0 0;overflow-wrap:anywhere">Foto, PDF, dan lampiran otomatis disalin ke cloud saat ditambahkan (maks 10 MB per file).</p>';
-  signed.appendChild(box);
+  box.id='lhFileBox';box.className='lhc-filecard';
+  box.innerHTML='<div class="lhc-filerow"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2.5"/><path d="M16 8V5.5A2.5 2.5 0 0 0 13.5 3h-7A2.5 2.5 0 0 0 4 5.5v9A2.5 2.5 0 0 0 6.5 17H8"/></svg><span id="lhFileStatus">Foto, PDF, dan lampiran otomatis disalin ke cloud (maks 10 MB per file).</span><svg id=\"lhFileCheck\" style=\"display:none\" viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9.5\"/><path d=\"m8 12.3 2.8 2.8L16.2 9.6\"/></svg></div><div class="lhc-row"><button id="lhFileUp" class="lhc-btn lhc-sm" type="button">Simpan file</button><button id="lhFileDown" class="lhc-btn lhc-sm" type="button">Ambil file</button></div>';
+  (document.getElementById('lhFileSlot')||signed).appendChild(box);
   document.getElementById('lhFileUp').onclick=()=>syncAll({});
   document.getElementById('lhFileDown').onclick=()=>downloadAll();
  }
@@ -3334,7 +3348,7 @@ body.dark .kipk-page .meta,body.dark .kipk-page small{color:var(--muted)}
   window.addEventListener('online',()=>{if(uid)setTimeout(()=>syncAll({quiet:true}),1500)});
  }catch(e){db=null}
  injectUI();
- window.LearnHubFiles={syncAll,downloadAll,download,scan,MAX_BYTES,CHUNK};
+ window.LearnHubFiles={syncAll,downloadAll,download,scan,MAX_BYTES,CHUNK};window.lhToast=toast;
 })();
 
 </script>
@@ -3575,5 +3589,55 @@ aside#mainSidebar .sidebar-profile .sidebar-link.active .sp-name{color:#3d6b67!i
 .lh-crop-guide{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(8,14,32,.5);border:2px solid #fff;pointer-events:none}
 #lhCropZoom{width:min(300px,100%)}
 .lh-crop-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+</style>
+<style id="lh-cloud-redesign">
+/* ===== Revisi: modal cloud rapi + sidebar bawah ===== */
+#lhCloudModal>section{border-radius:28px!important;padding:24px!important}
+#lhCloudModal .lhc-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+#lhCloudModal .lhc-logo{flex:0 0 52px;height:52px;border-radius:17px;background:var(--accent2);color:var(--accent-ink,var(--accent));display:flex;align-items:center;justify-content:center}
+#lhCloudModal .lhc-logo svg{width:26px;height:26px}
+#lhCloudModal .lhc-ttl{flex:1;min-width:0}
+#lhCloudModal .lhc-ttl h2{margin:0;font-size:calc(20px*var(--ts,1));line-height:1.2;font-weight:750;letter-spacing:-.01em}
+#lhCloudModal .lhc-ttl p{margin:3px 0 0;font-size:calc(14px*var(--ts,1));color:var(--muted)}
+#lhCloudModal #lhCloudClose{border:0;background:transparent;color:var(--muted);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+#lhCloudModal #lhCloudClose:hover{background:var(--soft)}
+#lhCloudModal .lhc-desc{margin:0 0 16px;font-size:calc(14px*var(--ts,1));line-height:1.6;color:var(--muted)}
+#lhCloudModal .lhc-field{display:block;margin-bottom:14px;font-size:calc(13px*var(--ts,1));font-weight:650;color:var(--muted)}
+#lhCloudModal .lhc-field input{display:block;width:100%;margin-top:6px;height:50px;padding:0 14px;border:1.5px solid var(--line);border-radius:16px;background:var(--soft);color:var(--text);font:inherit;font-size:calc(15px*var(--ts,1))}
+#lhCloudModal .lhc-field input:focus{outline:2px solid var(--accent);outline-offset:1px;background:var(--panel)}
+#lhCloudModal .lhc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#lhCloudModal .lhc-btn{min-height:54px;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:10px;border:1.5px solid var(--line);border-radius:16px;background:var(--panel);color:var(--text);font:inherit;font-size:calc(16px*var(--ts,1));font-weight:650;cursor:pointer;transform:none}
+#lhCloudModal .lhc-btn:hover{background:var(--soft);transform:none;filter:none}
+#lhCloudModal .lhc-btn svg{flex:0 0 22px}
+#lhCloudModal .lhc-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent,#fff)}
+#lhCloudModal .lhc-primary:hover{background:var(--accent);filter:brightness(1.08)}
+#lhCloudModal .lhc-sm{min-height:50px;font-size:calc(15px*var(--ts,1))}
+#lhCloudModal .lhc-out{width:100%;margin-top:18px;color:var(--bad)}
+#lhCloudModal .lhc-user{display:flex;align-items:center;gap:14px;padding:16px;border-radius:22px;background:var(--soft)}
+#lhCloudModal .lhc-av{flex:0 0 52px;height:52px;border-radius:50%;background:var(--accent);color:var(--on-accent,#fff);display:flex;align-items:center;justify-content:center;font-size:calc(22px*var(--ts,1));font-weight:650}
+#lhCloudModal .lhc-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#lhCloudModal .lhc-who small{font-size:calc(13px*var(--ts,1));color:var(--muted)}
+#lhCloudModal .lhc-who b{font-size:calc(15px*var(--ts,1));font-weight:600;overflow-wrap:anywhere}
+#lhCloudModal .lhc-pill{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good);font-size:calc(13px*var(--ts,1));font-weight:650}
+#lhCloudModal .lhc-lbl{margin:22px 0 10px;font-size:calc(12px*var(--ts,1));font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#lhCloudModal .lhc-filecard{border:1.5px solid var(--line);border-radius:22px;padding:16px}
+#lhCloudModal .lhc-filerow{display:flex;align-items:center;gap:12px;margin-bottom:14px;color:var(--muted)}
+#lhCloudModal .lhc-filerow>svg:first-child{flex:0 0 22px}
+#lhCloudModal #lhFileStatus{flex:1;min-width:0;margin:0;font-size:calc(15px*var(--ts,1));color:var(--text);overflow-wrap:anywhere}
+#lhCloudModal #lhFileCheck{flex:0 0 22px;color:var(--good)}
+#lhCloudModal #lhCloudStatus{margin:16px 2px 0;font-size:calc(13px*var(--ts,1));color:var(--muted);overflow-wrap:anywhere}
+#lhCloudModal #lhCloudStatus:empty{display:none}
+@media(max-width:380px){#lhCloudModal .lhc-btn{font-size:calc(14px*var(--ts,1))}}
+
+aside#mainSidebar{display:flex;flex-direction:column}
+aside#mainSidebar #semesterNav{flex:1 0 auto;display:flex;flex-direction:column}
+aside#mainSidebar .side-foot{position:static!important;margin:14px 0 0;padding:12px 10px 4px;border-top:1px solid rgba(255,255,255,.16)}
+aside#mainSidebar .sidebar-bottom{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.16);display:flex;flex-direction:column;gap:2px}
+aside#mainSidebar .sidebar-bottom .sb-item{display:flex!important;align-items:center;gap:14px;min-height:46px;padding:0 14px!important;border-radius:12px;background:transparent;color:rgba(255,255,255,.88)!important;font-weight:650;font-size:calc(14px*var(--ts,1));text-decoration:none}
+aside#mainSidebar .sidebar-bottom .sb-item svg{flex:0 0 20px;width:20px;height:20px}
+aside#mainSidebar .sidebar-bottom .sb-item:hover{background:rgba(255,255,255,.14);color:#fff!important}
+aside#mainSidebar .sidebar-bottom .sb-item.active{background:#fff!important;color:#0a4f4a!important}
+@media(max-width:800px){aside#mainSidebar{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}}
+html.lh-mobile aside#mainSidebar{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 </style>
 </body></html>
